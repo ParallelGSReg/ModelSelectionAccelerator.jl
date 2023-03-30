@@ -1,8 +1,8 @@
-using CSV, ModelSelection, DataFrames
+using CSV, ResearchAccelerator, DataFrames
 
 data = CSV.read("data/visitors.csv", DataFrame)
 
-model = ModelSelection.gsr(
+model = ResearchAccelerator.gsr(
     "australia china japan uk", 
     data,
     intercept=true,

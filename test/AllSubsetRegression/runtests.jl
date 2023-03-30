@@ -5,7 +5,7 @@ using
     CSV,
     DataFrames,
     DelimitedFiles,
-    ModelSelection
+    ResearchAccelerator
 
 data_small = CSV.read(DATABASE_SMALL, DataFrame)
 

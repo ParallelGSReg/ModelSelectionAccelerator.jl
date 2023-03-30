@@ -4,8 +4,8 @@ using Test,
     CSV,
     DataFrames,
     DelimitedFiles,
-    ModelSelection.PreliminarySelection,
-    ModelSelection.Preprocessing
+    ResearchAccelerator.PreliminarySelection,
+    ResearchAccelerator.Preprocessing
 
 data_fat = CSV.read(DATABASE_FAT, DataFrame)
 

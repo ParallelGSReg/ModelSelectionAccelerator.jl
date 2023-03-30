@@ -297,7 +297,7 @@ function get_selected_variables(order, datanames, intercept; fixedvariables = no
 		k = k + 1
 	end
 	if intercept
-		push!(cols, ModelSelection.get_column_index(:_cons, datanames))
+		push!(cols, ResearchAccelerator.get_column_index(:_cons, datanames))
 	end
 	return cols
 end

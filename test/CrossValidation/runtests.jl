@@ -5,10 +5,10 @@ using
 	CSV,
     DataFrames,
 	DelimitedFiles,
-	ModelSelection.CrossValidation,
-	ModelSelection.AllSubsetRegression,
-	ModelSelection.PreliminarySelection,
-	ModelSelection.Preprocessing
+	ResearchAccelerator.CrossValidation,
+	ResearchAccelerator.AllSubsetRegression,
+	ResearchAccelerator.PreliminarySelection,
+	ResearchAccelerator.Preprocessing
 
 data_fat = CSV.read(DATABASE_FAT, DataFrame)
 

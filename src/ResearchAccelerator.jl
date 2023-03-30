@@ -1,9 +1,8 @@
-module ModelSelection
+module ResearchAccelerator
 
 using DataFrames
 
-include("structs/modelselection_data.jl")
-include("datatypes/modelselection_result.jl")
+include("structs/ModelSelection_data.jl")
 include("const.jl")
 include("strings.jl")
 include("utils.jl")
@@ -23,7 +22,7 @@ using ..AllSubsetRegression
 using ..CrossValidation
 using ..Output
 
-export ModelSelectionData, ModelSelectionResult, gsr
+export ModelSelectionData
 
 export Preprocessing, FeatureExtraction, PreliminarySelection, CrossValidation, Output
 

@@ -1,1 +1,1 @@
-Base.show(io::IO, data::ModelSelection.ModelSelectionData) = ""
+Base.show(io::IO, data::ResearchAccelerator.ModelSelectionData) = ""

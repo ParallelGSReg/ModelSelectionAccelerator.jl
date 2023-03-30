@@ -13,7 +13,7 @@ using
 	Statistics,
 	StatsPlots,
 	ZipFile
-using ..ModelSelection
+using ..ResearchAccelerator
 
 export csv, summary, latex
 

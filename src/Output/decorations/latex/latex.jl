@@ -4,18 +4,18 @@ const DEFAULT_LATEX_DEST_FOLDER = "./LaTeX"
 """
 Create required figures by the template. Generate png images into the dest folder.
 # Arguments
-- `data::ModelSelection.ModelSelectionData`: the model selection data.
+- `data::ResearchAccelerator.ModelSelectionData`: the model selection data.
 - `destfolder::String`: destination directory.
 """
-function create_figures(data::ModelSelection.ModelSelectionData, destfolder::String)
+function create_figures(data::ResearchAccelerator.ModelSelectionData, destfolder::String)
 	expvars2 = filter(x -> x != :_cons, data.expvars)
 	criteria_diff = Array{Any}(undef, size(expvars2, 1), 2)
 
 	for (i, expvar) in enumerate(expvars2)
-		bcol = ModelSelection.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
-		tcol = ModelSelection.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
+		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
+		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
 
-		r2col = ModelSelection.get_column_index(:r2adj, data.results[1].datanames)
+		r2col = ResearchAccelerator.get_column_index(:r2adj, data.results[1].datanames)
 		x = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bcol]
 		if tcol !== nothing
 			y = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, tcol]), tcol]
@@ -107,13 +107,13 @@ end
 """
 Exports to latex.
 # Arguments
-- `data::ModelSelection.ModelSelectionData`: the model selection data.
+- `data::ResearchAccelerator.ModelSelectionData`: the model selection data.
 - `originaldata::String: the original model selection data.
 - `path::{String, Nothing}`: latex path.
 """
 function latex(
-	data::ModelSelection.ModelSelectionData,
-	originaldata::ModelSelection.ModelSelectionData;
+	data::ResearchAccelerator.ModelSelectionData,
+	originaldata::ResearchAccelerator.ModelSelectionData;
 	path::Union{String, Nothing} = DEFAULT_LATEX_DEST_FOLDER,
 )
 	tempfolder = tempname()
@@ -127,7 +127,7 @@ function latex(
 		end
 		create_workspace(tempfolder)
 		if data.results[1].ttest
-			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
+			dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
 		render_latex(dict, tempfolder)
 		zip_folder(tempfolder, path)
@@ -139,13 +139,13 @@ end
 Generates latex file.
 # Arguments
 - `dict::Dict`: TODO add definition.
-- `data::ModelSelection.ModelSelectionData`: the model selection data.
+- `data::ResearchAccelerator.ModelSelectionData`: the model selection data.
 - `originaldata::String: the original model selection data.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
-	originaldata::ModelSelection.ModelSelectionData,
+	data::ResearchAccelerator.ModelSelectionData,
+	originaldata::ResearchAccelerator.ModelSelectionData,
 )
 	# Preprocessing
 	preprocessing_dict = process_dict(data.extras[Preprocessing.PREPROCESSING_EXTRAKEY])
@@ -153,7 +153,7 @@ function latex!(
 	preprocessing_dict["datanames"] = string("[:", join(preprocessing_dict["datanames"], ", :"), "]")
 	preprocessing_dict["descriptive"] = []
 
-	datanames_index = ModelSelection.create_datanames_index(originaldata.expvars)
+	datanames_index = ResearchAccelerator.create_datanames_index(originaldata.expvars)
 
 	for (i, var) in enumerate(originaldata.expvars)
 		orig = originaldata.expvars_data[:, datanames_index[var]]
@@ -242,27 +242,27 @@ end
 Generates latex file with all subset regression result.
 # Arguments
 - `dict::Dict`: TODO add definition.
-- `data::ModelSelection.ModelSelectionData`: the model selection data.
+- `data::ResearchAccelerator.ModelSelectionData`: the model selection data.
 - `originaldata::String: the original model selection data.
-- `result::ModelSelection.AllSubsetRegression.AllSubsetRegressionResult: all subset regression result.
+- `result::ResearchAccelerator.AllSubsetRegression.AllSubsetRegressionResult: all subset regression result.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
-	originaldata::ModelSelection.ModelSelectionData,
-	result::ModelSelection.AllSubsetRegression.AllSubsetRegressionResult,
+	data::ResearchAccelerator.ModelSelectionData,
+	originaldata::ResearchAccelerator.ModelSelectionData,
+	result::ResearchAccelerator.AllSubsetRegression.AllSubsetRegressionResult,
 )
-	if ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY in keys(data.extras)
-		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)] = process_dict(data.extras[ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY])
+	if ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY in keys(data.extras)
+		dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)] = process_dict(data.extras[ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY])
 
 		if "fixedvariables" in keys(dict) && size(dict["fixedvariables"], 1) == 0
 			delete!(dict["fixedvariables"])  # FIXME: This should not be working
 		end
 
-		datanames_index = ModelSelection.create_datanames_index(result.datanames)
-		cols = ModelSelection.get_selected_variables(Int64(result.bestresult_data[datanames_index[:index]]), data.expvars, data.intercept)
+		datanames_index = ResearchAccelerator.create_datanames_index(result.datanames)
+		cols = ResearchAccelerator.get_selected_variables(Int64(result.bestresult_data[datanames_index[:index]]), data.expvars, data.intercept)
 
-		# FIXME What?? modelavg_datanames = ModelSelection.AllSubsetRegression.get_varnames(result.modelavg_datanames)
+		# FIXME What?? modelavg_datanames = ResearchAccelerator.AllSubsetRegression.get_varnames(result.modelavg_datanames)
 
 		d_bestmodel = Dict()
 		d_bestmodel["depvar"] = data.depvar
@@ -347,8 +347,8 @@ function latex!(
 
 		expvars_dict = map(
 			var -> begin
-				t = result.data[:, ModelSelection.get_column_index(Symbol("$(var)_t"), result.datanames)]
-				b = result.data[:, ModelSelection.get_column_index(Symbol("$(var)_b"), result.datanames)]
+				t = result.data[:, ResearchAccelerator.get_column_index(Symbol("$(var)_t"), result.datanames)]
+				b = result.data[:, ResearchAccelerator.get_column_index(Symbol("$(var)_b"), result.datanames)]
 
 				t_nnan = filter(x -> !isnan(x), t)
 				b_nnan = filter(x -> !isnan(x), b)
@@ -372,22 +372,22 @@ function latex!(
 				)
 			end, data.expvars)
 
-		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvars"] = expvars_dict
-		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvarswithoutcons"] =
+		dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvars"] = expvars_dict
+		dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvarswithoutcons"] =
 			filter(x -> x["name"] != :_cons, expvars_dict)
-		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["bestmodel"] = d_bestmodel
+		dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["bestmodel"] = d_bestmodel
 
-		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] != nothing
-			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] =
-				string("[:", join(dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"], ", :"), "]")
+		if dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] != nothing
+			dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] =
+				string("[:", join(dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"], ", :"), "]")
 		end
 
-		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtest"] != false
-			if "time" in keys(dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]) &&
-			   dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["time"] != nothing
-				dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex2"] = true
+		if dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtest"] != false
+			if "time" in keys(dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]) &&
+			   dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["time"] != nothing
+				dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex2"] = true
 			else
-				dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex"] = true
+				dict[string(ResearchAccelerator.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex"] = true
 			end
 		end
 	end
@@ -398,21 +398,21 @@ end
 Generates latex file with cross validation result.
 # Arguments
 - `dict::Dict`: TODO add definition.
-- `data::ModelSelection.ModelSelectionData`: the model selection data.
+- `data::ResearchAccelerator.ModelSelectionData`: the model selection data.
 - `originaldata::String: the original model selection data.
-- `result::ModelSelection.CrossValidation.CrossValidation: cross validation result.
+- `result::ResearchAccelerator.CrossValidation.CrossValidation: cross validation result.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
-	originaldata::ModelSelection.ModelSelectionData,
-	result::ModelSelection.CrossValidation.CrossValidationResult,
+	data::ResearchAccelerator.ModelSelectionData,
+	originaldata::ResearchAccelerator.ModelSelectionData,
+	result::ResearchAccelerator.CrossValidation.CrossValidationResult,
 )
-	if ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY in keys(data.extras)
-		dict[string(ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY)] =
-			process_dict(data.extras[ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY])
+	if ResearchAccelerator.CrossValidation.CROSSVALIDATION_EXTRAKEY in keys(data.extras)
+		dict[string(ResearchAccelerator.CrossValidation.CROSSVALIDATION_EXTRAKEY)] =
+			process_dict(data.extras[ResearchAccelerator.CrossValidation.CROSSVALIDATION_EXTRAKEY])
 
-		datanames_index = ModelSelection.create_datanames_index(result.datanames)
+		datanames_index = ResearchAccelerator.create_datanames_index(result.datanames)
 
 		d_bestmodel = []
 
@@ -483,9 +483,9 @@ function latex!(
 			end
 		end
 
-		dict[string(ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY)]["kfoldvars"] = d_bestmodel
+		dict[string(ResearchAccelerator.CrossValidation.CROSSVALIDATION_EXTRAKEY)]["kfoldvars"] = d_bestmodel
 
-		dict[string(ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY)]["outsample"] = Dict(
+		dict[string(ResearchAccelerator.CrossValidation.CROSSVALIDATION_EXTRAKEY)]["outsample"] = Dict(
 			"median" => @sprintf("%.6f", result.median_data[datanames_index[:rmseout]]),
 			"mean" => @sprintf("%.6f", result.average_data[datanames_index[:rmseout]]),
 		)

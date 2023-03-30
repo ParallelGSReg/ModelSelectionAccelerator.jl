@@ -2,8 +2,7 @@ using Distributions, Documenter
 
 makedocs(
     format = Documenter.HTML(),
-    sitename = "Modelselection",
-    modules = [GLM],
+    sitename = "ResearchAccelerator",
     pages = [
         "Home" => "index.md"
     ],
@@ -11,5 +10,5 @@ makedocs(
 )
 
 deploydocs(
-    repo   = "github.com/ParallelGSReg/ModelSelection.jl.git",
+    repo   = "github.com/ParallelGSReg/ResearchAccelerator.jl.git",
 )

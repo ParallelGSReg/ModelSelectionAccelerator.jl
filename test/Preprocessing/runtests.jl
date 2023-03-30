@@ -5,8 +5,8 @@ using
 	CSV,
     DataFrames,
 	DelimitedFiles,
-	ModelSelection,
-    ModelSelection.Preprocessing
+	ResearchAccelerator,
+    ResearchAccelerator.Preprocessing
 
 
 # TODO: Add panel_data to the tests
