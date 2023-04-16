@@ -1,0 +1,7 @@
+data
+*.jld
+*.csv
+*.pdf
+*.tex
+.vscode
+Manifest.toml

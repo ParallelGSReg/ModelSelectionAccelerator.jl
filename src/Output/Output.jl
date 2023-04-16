@@ -12,16 +12,16 @@ using
 	Printf,
 	Statistics,
 	StatsPlots,
-	ZipFile
+	ZipFile,
+	ModelSelection
+
 using ..ResearchAccelerator
 
-export csv, summary, latex
+export latex
 
-include("const.jl")
+include("../utils.jl")
 include("strings.jl")
-include("utils.jl")
-include("decorations/csv/csv.jl")
-include("decorations/summary/summary.jl")
+include("const.jl")
 include("decorations/latex/latex.jl")
 include("core.jl")
 
