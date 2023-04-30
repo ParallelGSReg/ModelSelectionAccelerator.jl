@@ -1,8 +1,8 @@
 function researchaccelerator(
-	data::ModelSelection.ModelSelectionResult;
+	data::ModelSelection.ModelSelectionData;
 	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,
-	keywords::Union{Nothing, Array{String}},
-	title::Union{Nothing, String}
+	#keywords::Union{Nothing, Array{String}},
+	#title::Union{Nothing, String}
 )
 	# TODO: TRANSFORMAR DATA EN ModelSelectionData
 	# TODO: GENERAR OBJETOS DE BIBLIO

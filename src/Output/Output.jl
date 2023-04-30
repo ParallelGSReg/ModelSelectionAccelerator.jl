@@ -19,7 +19,8 @@ using ..ResearchAccelerator
 
 export latex
 
-include("../utils.jl")
+#include("../utils.jl")
+include("utils.jl")
 include("strings.jl")
 include("const.jl")
 include("decorations/latex/latex.jl")
