@@ -1,10 +1,8 @@
 module ResearchAccelerator
 
+using ModelSelection
 using DataFrames
 
-include("structs/ModelSelection_data.jl")
-include("const.jl")
-include("strings.jl")
 include("utils.jl")
 include("core.jl")
 
