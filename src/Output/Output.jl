@@ -1,6 +1,7 @@
 module Output
 
 using
+ 	ModelSelection,
 	JLD,
 	DataFrames,
 	DelimitedFiles,

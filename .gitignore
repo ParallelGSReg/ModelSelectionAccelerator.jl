@@ -4,4 +4,6 @@ data
 *.pdf
 *.tex
 .vscode
+*.png
+/src/Output/graphs_test
 Manifest.toml

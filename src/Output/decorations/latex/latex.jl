@@ -15,11 +15,12 @@ Create required figures by the template. Generate png images into the dest folde
 """
 
 
-function create_figures(data, destfolder::String)
+function create_figures(data::ModelSelectionData, destfolder::String)
 	expvars2 = filter(x -> x != :_cons, data.expvars)
 	criteria_diff = Array{Any}(undef, size(expvars2, 1), 2)
 
 	for (i, expvar) in enumerate(expvars2)
+		
 		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
 
 		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
@@ -38,7 +39,10 @@ function create_figures(data, destfolder::String)
 		# Criteria vector
 		criteria_vec = data.results[1].criteria
 
-		for aux in eachindex(criteria_vec)	
+
+
+		for aux_name in criteria_vec
+			aux = ResearchAccelerator.get_column_index(Symbol(aux_name), data.results[1].datanames)
 			criteria_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), aux] # criteria including expvar
 			criteria_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), aux] # criteria excluding expvar
 			
@@ -50,15 +54,16 @@ function create_figures(data, destfolder::String)
 			if (criteria_with != []) & (criteria_without != [])
 				uniden_with = kde(criteria_with)
 				p1 = plot(range(min(criteria_with...), stop = max(criteria_with...), length = 150), z -> pdf(uniden_with, z)) # FIXME: This should not be working
-				p2 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
 				
 				uniden_without = kde(criteria_without)
 				p1 = plot!(range(min(criteria_without...), stop = max(criteria_without...), length = 150), z -> pdf(uniden_without, z)) # FIXME: This should not be working
-				p2 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
+				
 			
 				plot(p1, label = ["Including $(expvar)" "Excluding $(expvar)"], ylabel = "$(aux)") # FIXME: This should not be working
+				#savefig("Kdensity_criteria_$(expvar)_$(aux).png")
 				savefig(joinpath(destfolder, "Kdensity_criteria_$(expvar)_$(aux).png"))
-	
+				p2 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
+				p2 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
 				plot(p2, ylabel = "$(aux)") # FIXME: This should not be working
 				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar)_$(aux).png"))
 	
