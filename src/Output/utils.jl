@@ -57,3 +57,15 @@ function get_column_index(name::Union{String, Symbol, Nothing}, names::Union{Vec
 	end
 	return findfirst(isequal(name), names)
 end
+
+"""
+TODO: Add description.
+"""
+function get_array_simple_details(arr::Array) # TODO: Better typing definition
+	Dict(
+		((length(arr) == 1) ? "var" : "vars") => Dict(
+			"names" => map(string, arr),
+		),
+		((length(arr) == 1) ? "vars" : "var") => false,
+	)
+end

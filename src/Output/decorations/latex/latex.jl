@@ -1,3 +1,9 @@
+#using ModelSelection, Printf
+
+#data = ModelSelection.load("result.jld")
+# ResearchAccelerator.Output.create_figures(data, "D:/Julia/ResearchAccelerator.jl/graphs_test")
+
+
 const TEX_TEMPLATE_FOLDER = joinpath(dirname(@__FILE__), "tpl")
 const DEFAULT_LATEX_DEST_FOLDER = "./LaTeX"
 
@@ -7,16 +13,19 @@ Create required figures by the template. Generate png images into the dest folde
 - `data::ModelSelection.ModelSelectionData`: the model selection data.
 - `destfolder::String`: destination directory.
 """
-function create_figures(data::ModelSelection.ModelSelectionData, destfolder::String)
+
+
+function create_figures(data, destfolder::String)
 	expvars2 = filter(x -> x != :_cons, data.expvars)
 	criteria_diff = Array{Any}(undef, size(expvars2, 1), 2)
 
 	for (i, expvar) in enumerate(expvars2)
-		bcol = ModelSelection.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
-		tcol = ModelSelection.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
+		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
 
-		r2col = ModelSelection.get_column_index(:r2adj, data.results[1].datanames)
+		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
+
 		x = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bcol]
+				
 		if tcol !== nothing
 			y = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, tcol]), tcol]
 			biden = kde((x, y), npoints = (100, 100))
@@ -25,45 +34,65 @@ function create_figures(data::ModelSelection.ModelSelectionData, destfolder::Str
 			wireframe(biden.x, biden.y, biden.density; xlabel = "Coef. $expvar", ylabel = "t-test $expvar", camera = (45, 45))
 			savefig(joinpath(destfolder, "wireframe_$(expvar)_b_t.png"))
 		end
+		
+		# Criteria vector
+		criteria_vec = data.results[1].criteria
 
-		criteria_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), r2col]
-		criteria_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), r2col]
+		for aux in eachindex(criteria_vec)	
+			criteria_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), aux] # criteria including expvar
+			criteria_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), aux] # criteria excluding expvar
+			
+			criteria_with = filter(x -> !isnan(x), criteria_with)
+			criteria_with = filter(x -> !isinf(x), criteria_with)
+			criteria_without = filter(x -> !isnan(x), criteria_without)
+			criteria_without = filter(x -> !isinf(x), criteria_without)
 
-		uniden_with = kde(criteria_with)
-		uniden_without = kde(criteria_without)
+			if (criteria_with != []) & (criteria_without != [])
+				uniden_with = kde(criteria_with)
+				p1 = plot(range(min(criteria_with...), stop = max(criteria_with...), length = 150), z -> pdf(uniden_with, z)) # FIXME: This should not be working
+				p2 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
+				
+				uniden_without = kde(criteria_without)
+				p1 = plot!(range(min(criteria_without...), stop = max(criteria_without...), length = 150), z -> pdf(uniden_without, z)) # FIXME: This should not be working
+				p2 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
+			
+				plot(p1, label = ["Including $(expvar)" "Excluding $(expvar)"], ylabel = "$(aux)") # FIXME: This should not be working
+				savefig(joinpath(destfolder, "Kdensity_criteria_$(expvar)_$(aux).png"))
+	
+				plot(p2, ylabel = "$(aux)") # FIXME: This should not be working
+				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar)_$(aux).png"))
+	
+				criteria_diff[i, 1] = mean(criteria_with) - mean(criteria_without)
+				criteria_diff[i, 2] = "$(expvar)"
+		
+				#***************************************
+				# Ver que hacer aca, deberia imprimir un grafico con el aporte de cada variable para cada criterio seleccionado
+				#***************************************
 
-		p1 = plot(range(min(criteria_with...), stop = max(criteria_with...), length = 150), z -> pdf(uniden_with, z)) # FIXME: This should not be working
-		p1 = plot!(range(min(criteria_without...), stop = max(criteria_without...), length = 150), z -> pdf(uniden_without, z)) # FIXME: This should not be working
-		plot(p1, label = ["Including $(expvar)" "Excluding $(expvar)"], ylabel = "Adj. R2") # FIXME: This should not be working
-		savefig(joinpath(destfolder, "Kdensity_criteria_$(expvar).png"))
+				#a = sortslices(criteria_diff, dims = 1)
+				#labels = convert(Array{String}, a[:, 2])
+				#bar(a[:, 1], orientation=:h, yticks=(1:size(a,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the $(aux)")
+				#savefig(joinpath(destfolder, "cov_relevance_$(aux).png"))
+			end
+		
+		end
 
-		p2 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
-		p2 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
-		plot(p2, ylabel = "Adj. R2") # FIXME: This should not be working
-		savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
-
-		criteria_diff[i, 1] = mean(criteria_with) - mean(criteria_without)
-		criteria_diff[i, 2] = "$(expvar)"
 	end
-	a = sortslices(criteria_diff, dims = 1)
-	labels = convert(Array{String}, a[:, 2])
-	bar(a[:, 1], orientation=:h, yticks=(1:size(a,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the Adj. R2")
-	savefig(joinpath(destfolder, "cov_relevance.png"))
 
-	numofpositivegainsvariables = size(findall(x -> x > 0, a[:, 1]), 1)
-	numofnegativegainsvariables = size(findall(x -> x < 0, a[:, 1]), 1)
-	intelligent_text = Dict(
-		"numofpositivegainsvariables" => numofpositivegainsvariables,
-		"numofnegativegainsvariables" => numofnegativegainsvariables,
-		"multiple_positive_variables" => numofpositivegainsvariables > 1,
-		"multiple_negative_variables" => numofnegativegainsvariables > 1,
-		"no_negative_variables" => numofnegativegainsvariables == 0,
-		"bestvar" => a[1, 2],
-		"bestvar_gainsinperc" => a[1, 1],
-		"worstvar" => a[end, 2],
-		"worstvar_gainsinperc" => a[end, 1],
-	)
-	return intelligent_text
+	#numofpositivegainsvariables = size(findall(x -> x > 0, a[:, 1]), 1)
+	#numofnegativegainsvariables = size(findall(x -> x < 0, a[:, 1]), 1)
+	#intelligent_text = Dict(
+	#	"numofpositivegainsvariables" => numofpositivegainsvariables,
+	#	"numofnegativegainsvariables" => numofnegativegainsvariables,
+	#	"multiple_positive_variables" => numofpositivegainsvariables > 1,
+	#	"multiple_negative_variables" => numofnegativegainsvariables > 1,
+	#	"no_negative_variables" => numofnegativegainsvariables == 0,
+	#	"bestvar" => a[1, 2],
+	#	"bestvar_gainsinperc" => a[1, 1],
+	#	"worstvar" => a[end, 2],
+	#	"worstvar_gainsinperc" => a[end, 1],
+	#)
+#	return intelligent_text
 end
 
 """
@@ -81,9 +110,9 @@ Gets columns statistics.
 - `data::Union{Array{Float64}, Array{Float32}, Array{Union{Float32, Missing}}, Array{Union{Float64, Missing}}}`: column data.
 """
 function get_col_statistics(
-	data::Union{Array{Float64}, Array{Float32}, Array{Union{Float32, Missing}}, Array{Union{Float64, Missing}}},
+	data,
 )
-	nnan = filter(x -> !isnan(x), data)
+	nnan = filter(x -> !isnan(x), data.results[1].data)
 	if (isempty(nnan))
 		return Dict(
 			"avg" => "",
@@ -111,7 +140,10 @@ Exports to latex.
 - `path::{String, Nothing}`: latex path.
 """
 function latex(
-	data::ModelSelection.ModelSelectionData;
+	#data::ResearchAccelerator.ModelSelectionData,
+	#originaldata::ResearchAccelerator.ModelSelectionData;
+	data,
+	originaldata;
 	path::Union{String, Nothing} = DEFAULT_LATEX_DEST_FOLDER,
 )
 	tempfolder = tempname()
@@ -141,7 +173,8 @@ Generates latex file.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
+	data,
+	originaldata,
 )
 	# Preprocessing
 	preprocessing_dict = process_dict(data.extras[Preprocessing.PREPROCESSING_EXTRAKEY])
@@ -243,14 +276,16 @@ Generates latex file with all subset regression result.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
-	result::ModelSelection.AllSubsetRegression.AllSubsetRegressionResult,
+	data,
+	originaldata::ResearchAccelerator.ModelSelectionData,
+	#result::ResearchAccelerator.AllSubsetRegression.AllSubsetRegressionResult,
+	result,		# Encontrar el type optimo
 )
 	if ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY in keys(data.extras)
 		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)] = process_dict(data.extras[ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY])
 
 		if "fixedvariables" in keys(dict) && size(dict["fixedvariables"], 1) == 0
-			delete!(dict["fixedvariables"])  # FIXME: This should not be working
+			delete!(dict, "fixedvariables")  # FIXME: This should not be working
 		end
 
 		datanames_index = ModelSelection.create_datanames_index(result.datanames)
@@ -397,8 +432,10 @@ Generates latex file with cross validation result.
 """
 function latex!(
 	dict::Dict,
-	data::ModelSelection.ModelSelectionData,
-	result::ModelSelection.CrossValidation.CrossValidationResult,
+	data::ResearchAccelerator.ModelSelectionData,
+	originaldata::ResearchAccelerator.ModelSelectionData,
+	#result::ResearchAccelerator.CrossValidation.CrossValidationResult,
+	result,
 )
 	if ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY in keys(data.extras)
 		dict[string(ModelSelection.CrossValidation.CROSSVALIDATION_EXTRAKEY)] =
