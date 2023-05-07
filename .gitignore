@@ -5,5 +5,6 @@ data
 *.tex
 .vscode
 *.png
+aux_file.jl
 /src/Output/graphs_test
 Manifest.toml

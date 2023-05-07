@@ -1,9 +1,3 @@
-#using ModelSelection, Printf
-
-#data = ModelSelection.load("result.jld")
-# ResearchAccelerator.Output.create_figures(data, "D:/Julia/ResearchAccelerator.jl/graphs_test")
-
-
 const TEX_TEMPLATE_FOLDER = joinpath(dirname(@__FILE__), "tpl")
 const DEFAULT_LATEX_DEST_FOLDER = "./LaTeX"
 
@@ -14,17 +8,27 @@ Create required figures by the template. Generate png images into the dest folde
 - `destfolder::String`: destination directory.
 """
 
-
 function create_figures(data::ModelSelectionData, destfolder::String)
+	
+	# Remove old graphs
+	foreach(rm, filter(endswith(".png"), readdir(destfolder,join=true)))
+
+	# Exogenous var vector (including fixed variables)
 	expvars2 = filter(x -> x != :_cons, data.expvars)
-	criteria_diff = Array{Any}(undef, size(expvars2, 1), 2)
+	if data.fixedvariables != []
+		expvars2 = append!(expvars2,filter(x -> x != :_cons, data.fixedvariables))
+	end
+	
+	# Criteria diff matrix
+	criteria_diff = Array{Any}(undef, (length(expvars2) - length(data.fixedvariables)), 1 + length(data.results[1].criteria))
 
+	# Criteria vector
+	criteria_vec = data.results[1].criteria
+	
 	for (i, expvar) in enumerate(expvars2)
-		
+
 		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
-
 		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
-
 		x = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bcol]
 				
 		if tcol !== nothing
@@ -35,69 +39,65 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 			wireframe(biden.x, biden.y, biden.density; xlabel = "Coef. $expvar", ylabel = "t-test $expvar", camera = (45, 45))
 			savefig(joinpath(destfolder, "wireframe_$(expvar)_b_t.png"))
 		end
-		
-		# Criteria vector
-		criteria_vec = data.results[1].criteria
-
-
-
+	
 		for aux_name in criteria_vec
 			aux = ResearchAccelerator.get_column_index(Symbol(aux_name), data.results[1].datanames)
 			criteria_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), aux] # criteria including expvar
 			criteria_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), aux] # criteria excluding expvar
 			
-			criteria_with = filter(x -> !isnan(x), criteria_with)
-			criteria_with = filter(x -> !isinf(x), criteria_with)
-			criteria_without = filter(x -> !isnan(x), criteria_without)
-			criteria_without = filter(x -> !isinf(x), criteria_without)
-
+			# Filter by NaN and Inf obs
+			criteria_with = filter(x -> !isnan(x), filter(x -> !isinf(x), criteria_with))
+			criteria_without = filter(x -> !isnan(x), filter(x -> !isinf(x), criteria_without))
+	
+			# This function excludes fixed variables, because criteria_without is an empty vector due to is fixed
 			if (criteria_with != []) & (criteria_without != [])
 				uniden_with = kde(criteria_with)
-				p1 = plot(range(min(criteria_with...), stop = max(criteria_with...), length = 150), z -> pdf(uniden_with, z)) # FIXME: This should not be working
-				
 				uniden_without = kde(criteria_without)
-				p1 = plot!(range(min(criteria_without...), stop = max(criteria_without...), length = 150), z -> pdf(uniden_without, z)) # FIXME: This should not be working
 				
-			
-				plot(p1, label = ["Including $(expvar)" "Excluding $(expvar)"], ylabel = "$(aux)") # FIXME: This should not be working
-				#savefig("Kdensity_criteria_$(expvar)_$(aux).png")
-				savefig(joinpath(destfolder, "Kdensity_criteria_$(expvar)_$(aux).png"))
+				p1 = plot(range(min(criteria_with...), stop = max(criteria_with...), length = 150), z -> pdf(uniden_with, z)) 
+				p1 = plot!(range(min(criteria_without...), stop = max(criteria_without...), length = 150), z -> pdf(uniden_without, z))
+				plot(p1, label = ["Including $(expvar)" "Excluding $(expvar)"], ylabel = "$(aux_name)") 
+				savefig(joinpath(destfolder, "Kdensity_criteria_$(expvar)_$(aux_name).png"))
+				
 				p2 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
 				p2 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
-				plot(p2, ylabel = "$(aux)") # FIXME: This should not be working
-				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar)_$(aux).png"))
-	
-				criteria_diff[i, 1] = mean(criteria_with) - mean(criteria_without)
-				criteria_diff[i, 2] = "$(expvar)"
-		
-				#***************************************
-				# Ver que hacer aca, deberia imprimir un grafico con el aporte de cada variable para cada criterio seleccionado
-				#***************************************
-
-				#a = sortslices(criteria_diff, dims = 1)
-				#labels = convert(Array{String}, a[:, 2])
-				#bar(a[:, 1], orientation=:h, yticks=(1:size(a,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the $(aux)")
-				#savefig(joinpath(destfolder, "cov_relevance_$(aux).png"))
-			end
-		
+				plot(p2, ylabel = "$(aux_name)") 
+				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar)_$(aux_name).png"))
+				
+				criteria_diff[i, 1 + findfirst( x -> x == aux_name, criteria_vec)] = mean(criteria_with) - mean(criteria_without)
+				criteria_diff[i, 1] = "$(expvar)"
+			end	
 		end
+	end
+	
+
+	for aux_name in criteria_vec
+		criteria_col = findfirst( x -> x == aux_name, criteria_vec)
+        criteria_vec_aux = [criteria_diff[:, 1 + criteria_col] criteria_diff[:,1]]
+		criteria_vec_aux = sortslices(criteria_vec_aux, dims = 1)
+		labels = convert(Array{String}, criteria_vec_aux[:, 2])
+		bar(criteria_vec_aux[:, 1], orientation=:h, yticks=(1:size(criteria_vec_aux,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the $(aux_name)")
+		savefig(joinpath(destfolder, "cov_relevance_$(aux_name).png"))    
+		
+		numofpositivegainsvariables = size(findall(x -> x > 0, criteria_vec_aux[:, 1]), 1)
+		numofnegativegainsvariables = size(findall(x -> x < 0, criteria_vec_aux[:, 1]), 1)
+		
+		intelligent_text = Dict()
+		intelligent_text = push!(intelligent_text,
+			"numofpositivegainsvariables_$(aux_name)" => numofpositivegainsvariables,
+			"numofnegativegainsvariables_$(aux_name)" => numofnegativegainsvariables,
+			"multiple_positive_variables_$(aux_name)" => numofpositivegainsvariables > 1,
+			"multiple_negative_variables_$(aux_name)" => numofnegativegainsvariables > 1,
+			"no_negative_variables_$(aux_name)" => numofnegativegainsvariables == 0,
+			"bestvar_$(aux_name)" => criteria_vec_aux[1, 2],
+			"bestvar_gainsinperc_$(aux_name)" => criteria_vec_aux[1, 1],
+			"worstvar_$(aux_name)" => criteria_vec_aux[end, 2],
+			"worstvar_gainsinperc_$(aux_name)" => criteria_vec_aux[end, 1],
+			)
+		
+		#return intelligent_text /this statement break the loop. Is a return statement needed?	
 
 	end
-
-	#numofpositivegainsvariables = size(findall(x -> x > 0, a[:, 1]), 1)
-	#numofnegativegainsvariables = size(findall(x -> x < 0, a[:, 1]), 1)
-	#intelligent_text = Dict(
-	#	"numofpositivegainsvariables" => numofpositivegainsvariables,
-	#	"numofnegativegainsvariables" => numofnegativegainsvariables,
-	#	"multiple_positive_variables" => numofpositivegainsvariables > 1,
-	#	"multiple_negative_variables" => numofnegativegainsvariables > 1,
-	#	"no_negative_variables" => numofnegativegainsvariables == 0,
-	#	"bestvar" => a[1, 2],
-	#	"bestvar_gainsinperc" => a[1, 1],
-	#	"worstvar" => a[end, 2],
-	#	"worstvar_gainsinperc" => a[end, 1],
-	#)
-#	return intelligent_text
 end
 
 """
