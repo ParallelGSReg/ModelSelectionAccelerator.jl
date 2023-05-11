@@ -19,6 +19,7 @@ using ..Output
 
 #export Preprocessing, FeatureExtraction, PreliminarySelection, CrossValidation, Output
 export Output
+export researchaccelerator
 
 end
 

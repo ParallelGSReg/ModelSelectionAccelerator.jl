@@ -4,10 +4,7 @@ function researchaccelerator(
 	#keywords::Union{Nothing, Array{String}},
 	#title::Union{Nothing, String}
 )
-	# TODO: TRANSFORMAR DATA EN ModelSelectionData
-	# TODO: GENERAR OBJETOS DE BIBLIO
-
-	ResearchAccelerator.Output.latex(data, path = exportlatex)
+	Output.latex(data, data.original_data, path = exportlatex)
 	println("Latex document has been generated")
 	# TODO: incluir el path de salida
 end

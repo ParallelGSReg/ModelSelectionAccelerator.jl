@@ -156,7 +156,7 @@ function latex(
 	addextras(data, :latex, nothing, tempfolder)
 	if size(data.results, 1) > 0
 		dict = Dict()
-		latex!(dict, data)
+		latex!(dict, data, originaldata)
 		for i in 1:size(data.results, 1)
 			latex!(dict, data, data.results[i])
 		end
