@@ -7,4 +7,5 @@ data
 *.png
 aux_file.jl
 /src/Output/graphs_test
+LaTeX*
 Manifest.toml
