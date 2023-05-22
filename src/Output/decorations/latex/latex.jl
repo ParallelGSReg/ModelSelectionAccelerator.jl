@@ -156,17 +156,16 @@ function latex(
 		dict = Dict()
 		latex!(dict, data, originaldata)
 		for i in 1:size(data.results, 1)
-			latex!(dict, data, data.results[i])
+			latex!(dict, data, originaldata, data.results[i])
 		end
 		if data.results[1].ttest
-			#dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
-			dict["intelligent_text"] = create_figures(data, tempfolder)
-			print(dict)
+			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
 		create_workspace(tempfolder)
 		render_latex(dict, tempfolder)
 		zip_folder(tempfolder, path)
 	end
+	println(dict)
 	rm(tempfolder, force = true, recursive = true)
 end
 
