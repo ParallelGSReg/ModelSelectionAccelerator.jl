@@ -8,6 +8,9 @@ Create required figures by the template. Generate png images into the dest folde
 - `destfolder::String`: destination directory.
 """
 
+# Quitar los wireframe y que ordene todo por order en vez del vector de criterios
+# Generar una clave adicional en el dict para guardar el vector de criterios
+
 function create_figures(data::ModelSelectionData, destfolder::String)
 	
 	# Remove old graphs
@@ -425,7 +428,7 @@ function latex!(
 		end
 	end
 	return dict
-	println(dict)
+	println(dict["allsubsetregression"])
 end
 
 """
