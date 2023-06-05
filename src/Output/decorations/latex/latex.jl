@@ -11,7 +11,7 @@ Create required figures by the template. Generate png images into the dest folde
 function create_figures(data::ModelSelectionData, destfolder::String)
 	
 	# Remove old graphs
-	foreach(rm, filter(endswith(".png"), readdir(destfolder,join=true)))
+	#foreach(rm, filter(endswith(".png"), readdir(destfolder,join=true)))
 
 	# Exogenous var vector (including fixed variables)
 	expvars2 = filter(x -> x != :_cons, data.expvars)
@@ -111,8 +111,8 @@ Copy the required files from the tpl folder. The existent content will be replac
 function create_workspace(destfolder::AbstractString)
 	cp(TEX_TEMPLATE_FOLDER, destfolder, force = true)
 end
-
 """
+
 Gets columns statistics.
 # Arguments
 - `data::Union{Array{Float64}, Array{Float32}, Array{Union{Float32, Missing}}, Array{Union{Float64, Missing}}}`: column data.
@@ -161,14 +161,13 @@ function latex(
 		for i in 1:size(data.results, 1)
 			latex!(dict, data, originaldata, data.results[i])
 		end
+		create_workspace(tempfolder)
 		if data.results[1].ttest
 			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
-		create_workspace(tempfolder)
 		render_latex(dict, tempfolder)
 		zip_folder(tempfolder, path)
 	end
-	println(dict)
 	rm(tempfolder, force = true, recursive = true)
 end
 
@@ -272,7 +271,6 @@ function latex!(
 	end
 
 	return dict
-	println(dict)
 end
 
 """
@@ -428,7 +426,6 @@ function latex!(
 		end
 	end
 	return dict
-	println(dict["allsubsetregression"])
 end
 
 """
