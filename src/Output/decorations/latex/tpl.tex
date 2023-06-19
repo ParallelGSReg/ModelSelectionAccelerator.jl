@@ -3,7 +3,7 @@
 \usepackage{GSReg-style}
 
 \title{ResearchAccelerator.jl \\
-       \vspace{5mm} REPORT} 
+       \vspace{5mm} SUMMARY REPORT} 
 
 %\author{
 %  Insert author name \\
@@ -46,7 +46,7 @@ Following Varian’s advices, about ML and EC complementarities -i.e. merging al
     \item Post-estimation fine-tuning: coefficient re-evaluation through cross-validation techniques and model averaging across different k-fold results. 
 \end{enumerate}
 
-In order to implement this feature selection algorithm, the following syntax has been used:
+In order to implement this model selection algorithm, the following syntax has been used:
 
 \begin{lstlisting} 
   using ResearchAccelerator
@@ -73,13 +73,13 @@ In order to implement this feature selection algorithm, the following syntax has
     modelavg = {{modelavg}},
     residualtest = {{residualtest}},{{#orderresults}}
     orderresults = {{.}},{{/orderresults}}{{/allsubsetregression}}{{#crossvalidation}}
-    kfoldcrossvalidation = {{.}},{{/crossvalidation}}{{#numfolds}}
-    numfolds = {{.}},{{/numfolds}}{{#testsetshare}}
+    kfoldcrossvalidation = {{.}},{{/crossvalidation}}{{#kfolds}}
+    numfolds = {{.}},{{/kfolds}}{{#testsetshare}}
     testsetshare = {{.}}{{/testsetshare}}
   )
 \end{lstlisting}
 
-The report is structured as follows. After this introduction, the methodology is presented. In section 3, descriptive statistics are introduced. {{#preliminaryselection}}After that, LASSO results are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is shown. {{#crossvalidation}}Finally, the last section examines K-fold cross-validation outcomes.{{/crossvalidation}}
+The report is structured as follows. After this introduction the methodology is presented. In section 3, descriptive statistics are introduced. {{#preliminaryselection}}After that, LASSO results are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is shown. {{#crossvalidation}}Finally, the last section examines K-fold cross-validation outcomes.{{/crossvalidation}}
 
 \section{Methodology}
 
@@ -92,10 +92,10 @@ It performs required variable transformations to improve model accuracy and feat
 
   {{#seasonaladjustment}}{{#seasonaladjustment}}
     {{#vars}}
-      \item Seasonal-adjustment: variables {{#names}}{{.}}, {{/names}} have been selected for seasonal adjustment using \verb SingularSpectrumAnalysis.jl  (see \cite{hassani2007}). For each one, the function removes the seasonal component using window lengths equal to {{#values}}{{.}}, {{/values}}respectively.
+      \item Seasonal-adjustment: variables {{#names}}{{.}}, {{/names}} have been selected for seasonal adjustment using \verb|SingularSpectrumAnalysis.jl|  (see \cite{hassani2007}). For each one, the function removes the seasonal component using window lengths equal to {{#values}}{{.}}, {{/values}}respectively.
     {{/vars}}
     {{#var}}
-      \item Seasonal-adjustment: variable {{#names}}{{.}}{{/names}}, has been selected for seasonal adjustment using \verb SingularSpectrumAnalysis.jl  (see \cite{hassani2007}). The function removes the seasonal component using a window length equal to {{#values}}{{.}}{{/values}}.
+      \item Seasonal-adjustment: variable {{#names}}{{.}}{{/names}}, has been selected for seasonal adjustment using \verb|SingularSpectrumAnalysis.jl|  (see \cite{hassani2007}). The function removes the seasonal component using a window length equal to {{#values}}{{.}}{{/values}}.
     {{/var}}
   {{/seasonaladjustment}}{{/seasonaladjustment}}
 
@@ -181,7 +181,7 @@ It must be noticed that all predictors are standardized "on-the-fly", in order t
 Unlike other feature selection algorithms (including LASSO), All-subset-regression (ASR) approaches guarantees both in-sample and out-of-sample optimality (i.e. better information criteria results than any other method). However, it has been left aside by econometricians and machine learning practitioners because of computational concerns. Execution times for ASR algorithms in a more-than-20-covariates environement were prohibitive until now. Using existing ASR packages, a simple feature selection problem for 20 covariates usually takes more than 8000 seconds in 
 \href{https://cran.r-project.org/web/packages/MuMIn/MuMIn.pdf}{R}, and more than 500000 seconds in \href{https://ideas.repec.org/c/boc/bocode/s457737.html#download}{Stata}. Moreover, with 25 potential covariates both algorithms are unable to obtain feasible-solutions in standard personal computers.
 
-Fortunately, the \verb ResearchAccelerator.jl package has significantly reduced execution times, running up to 3165 times faster than Stata and 197 times faster than R (see \cite{gsreg2019}). This improvement allows researchers to regain attention on ASR algorithms, looking for better feature selection results.
+Fortunately, the \verb|ResearchAccelerator.jl| package has significantly reduced execution times, running up to 3165 times faster than Stata and 197 times faster than R (see \cite{gsreg2019}). This improvement allows researchers to regain attention on ASR algorithms, looking for better feature selection results.
 
 In this Julia package, the best model among $2^{n}-1$ alternatives is selected using a potentially composite ordering variable defined as the equally-weighted average of normalized (to guarantee equal weights) and harmonized (to ensure that higher values always identify better models) user's specified criteria. For in-sample adjustment, available alternatives include: Adjusted R2 (:r2adj, the default), Bayesian information criteria (:bic), Akaike and Corrected Akaike information criteria (:aic and :aicc), Mallows's Cp statistic (:cp), Sum of squared errors (also known as Residual sum of squares, :sse) and the Root mean square error (:rmse). For out-of-sample accuracy, there is available the out-of-sample root mean square error (:rmsout). Users are free to combine in-sample and out-of-sample information criteria. In this report, selected information criteria include ({{criteria}}) as the key variable/s for feature selection.
 
@@ -230,7 +230,7 @@ The general procedure is as follows:
   \item Summarize model strengths using CV scores
 \end{enumerate}
 
-In \verb ResearchAccelerator.jl  the K-fold cross-validation is available for both LASSO pre-selection and ASR final selection. In the latter, for each K-partition $2^{p} - 1$ alternative models are fitted (where p is the number of potential covariates included in the ASR algorithm) and the candidate ‘optimal’ model is selected using the out-of-sample Root Mean Square Error (obtained from the test set). Therefore, K-candidate models are retained (one for each K-partition). The final "best" model is obtained using either across-model averages or medians.
+In \verb|ResearchAccelerator.jl|  the K-fold cross-validation is available for both LASSO pre-selection and ASR final selection. In the latter, for each K-partition $2^{p} - 1$ alternative models are fitted (where p is the number of potential covariates included in the ASR algorithm) and the candidate ‘optimal’ model is selected using the out-of-sample Root Mean Square Error (obtained from the test set). Therefore, K-candidate models are retained (one for each K-partition). The final "best" model is obtained using either across-model averages or medians.
 
 This cross-validation specific alternative has been denominated as \textit{Averaging Cross validation (ACV)} by Jung and Hu (see, \cite{jung2015}). The authors found that:
 
@@ -243,7 +243,7 @@ This cross-validation specific alternative has been denominated as \textit{Avera
 It is worth mentioning that K-fold preferred methodologies change depending on whether cross-section, time-series or panel data observations are employed. For the first one, standard K-fold random allocation is the gold-standard (see \cite{arlot2010}). 
 
 {{#time}}
-For time series, however, this methodology could decrease model selection accuracy because -potential- serial correlation violate the cross-validation fundamental assumption of i.i.d. data (see \cite{bergmeir2012}). Among available alternatives, most widely used are non-dependent k-fold cross-validation (see \cite{bergmeir2018}) and rolling forecast origin cross-validation (based on \cite{hyndman2013}). Unfortunately, the  first one entails an inefficient use of available information and second one has comparison problems for the above mentioned ACV approach (because each sampling partition has a different training set size). Therefore, \verb ResearchAccelerator.jl uses a slightly modified version of the rolling forecast origin cross-validation, with the following steps:
+For time series, however, this methodology could decrease model selection accuracy because -potential- serial correlation violate the cross-validation fundamental assumption of i.i.d. data (see \cite{bergmeir2012}). Among available alternatives, most widely used are non-dependent k-fold cross-validation (see \cite{bergmeir2018}) and rolling forecast origin cross-validation (based on \cite{hyndman2013}). Unfortunately, the  first one entails an inefficient use of available information and second one has comparison problems for the above mentioned ACV approach (because each sampling partition has a different training set size). Therefore, \verb|ResearchAccelerator.jl| uses a slightly modified version of the rolling forecast origin cross-validation, with the following steps:
 
 \begin{enumerate}
 \item User defines the rolling test-set share ($s1$) and the number of sub-samples (K);
@@ -315,6 +315,7 @@ where $T{j}$ is the total number of time series observations for panel-id = j.
 \end{enumerate}
 {{/panelid}}
 {{/crossvalidation}}
+
 {{#input}}
 \section{Descriptive Statistics}
 
@@ -426,29 +427,28 @@ Finally, we include a unique figure where covariate relative performance is comp
 
 \begin{figure}[!ht]
   \centering
+  
   \begin{minipage}[b]{0.46\textwidth}
     \centering
     \includegraphics[width=\textwidth]{contour_{{name}}_b_t.png}
     \caption{Bivariate Kernel density (Contour view)}
   \end{minipage}
   \hfill
-  \begin{minipage}[b]{0.53\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{wireframe_{{name}}_b_t.png}
-    \caption{Bivariate Kernel density (Contour view)}
-  \end{minipage}
 
-  \begin{minipage}[b]{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Kdensity_criteria_{{name}}.png}
-    \caption{Selection criteria gains for including {{name}} (Kernel view)}
-  \end{minipage}
-  \hfill
   \begin{minipage}[b]{0.48\textwidth}
     \centering    
     \includegraphics[width=\textwidth]{BoxViolinDot_{{name}}.png}
     \caption{Selection criteria gains for including {{name}} (Box-Violin view)}    
   \end{minipage}
+
+  {{#residualtest}}
+  \begin{minipage}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{KernelDensity_{{name}}_b_residuals.png}
+    \caption{Residual Test Density of {{name}} (Kernel view)}
+  \end{minipage}
+  \hfill
+  {{/residualtest}}
 \end{figure}
 
 \vspace{1cm}

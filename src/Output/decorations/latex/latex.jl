@@ -166,6 +166,7 @@ function latex(
 			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
 		render_latex(dict, tempfolder)
+		rm(path, force=true)
 		zip_folder(tempfolder, path)
 	end
 	rm(tempfolder, force = true, recursive = true)
