@@ -95,9 +95,9 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 		"multiple_negative_variables" => numofnegativegainsvariables > 1,
 		"no_negative_variables" => numofnegativegainsvariables == 0,
 		"bestvar" => criteria_diff_sort[end, 2],
-		"bestvar_gainsinperc" => criteria_diff_sort[end, 1],
+		"bestvar_gainsinperc" => @sprintf("%.3f", criteria_diff_sort[end, 1]),
 		"worstvar" => criteria_diff_sort[1, 2],
-		"worstvar_gainsinperc" => criteria_diff_sort[1, 1],
+		"worstvar_gainsinperc" => @sprintf("%.3f", criteria_diff_sort[1, 1]),
 		)
 		
 	return intelligent_text
@@ -166,8 +166,9 @@ function latex(
 			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
 		render_latex(dict, tempfolder)
-		rm(path, force=true)
-		zip_folder(tempfolder, path)
+		rm(path*".zip", force=true)
+		zip_folder(tempfolder, path*".zip")
+		return dict
 	end
 	rm(tempfolder, force = true, recursive = true)
 end
@@ -184,7 +185,9 @@ function latex!(
 	originaldata,
 )
 	# Preprocessing
-	preprocessing_dict = process_dict(data.extras[Preprocessing.PREPROCESSING_EXTRAKEY])
+	preprocessing_dict_original = process_dict(data.extras[Preprocessing.PREPROCESSING_EXTRAKEY])
+	user_input_dict = process_dict(data.options)
+	preprocessing_dict = merge(preprocessing_dict_original,user_input_dict)
 	preprocessing_dict["equation"] = join(map(x -> "$x", filter(x -> x != :_cons, preprocessing_dict["datanames"])), " ")
 	preprocessing_dict["datanames"] = string("[:", join(preprocessing_dict["datanames"], ", :"), "]")
 	preprocessing_dict["descriptive"] = []

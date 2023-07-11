@@ -1,1 +1,1 @@
-const EXPORTLATEX_DEFAULT = "ResearchAccelerator.zip"
+const EXPORTLATEX_DEFAULT = "ResearchAccelerator"
