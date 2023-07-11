@@ -49,15 +49,15 @@ Following Varian’s advices, about ML and EC complementarities -i.e. merging al
 In order to implement this model selection algorithm, the following syntax has been used:
 
 \begin{lstlisting} 
-  using ResearchAccelerator
-  ResearchAccelerator.gsr({{#input}}
+  using ModelSelection
+  ModelSelection.gsr({{#input}}
+    estimator = {{estimator}},
     equation = "{{equation}}",
     data = {{data}},
-    datanames = {{datanames}},
     method = :{{method}},
     intercept = {{intercept}},{{#panel}}
     panel = {{.}},{{/panel}}{{#time}}
-    time = {{.}},{{/time}}{{#seasonaladjustment}}
+    time = :{{.}},{{/time}}{{#seasonaladjustment}}
     seasonaladjustment = {{.}},{{/seasonaladjustment}}
     removeoutliers = {{removeoutliers}},{{/input}}{{#featureextraction}}{{#fe_sqr}}
     fe_sqr = {{.}},{{/fe_sqr}}{{#fe_log}}
@@ -70,6 +70,7 @@ In order to implement this model selection algorithm, the following syntax has b
     outsample = {{.}},{{/outsample}}{{#criteria}}
     criteria = {{.}},{{/criteria}}
     ttest = {{ttest}},
+    ztest = {{ztest}},
     modelavg = {{modelavg}},
     residualtest = {{residualtest}},{{#orderresults}}
     orderresults = {{.}},{{/orderresults}}{{/allsubsetregression}}{{#crossvalidation}}
