@@ -22,7 +22,8 @@ end
 """
 TODO: Add description.
 """
-function get_array_details(arr::Array) # TODO: Better typing definition
+function get_array_details(arr::Union{Symbol, Array{Symbol}}) # TODO: Better typing definition
+	
 	dict = Dict(arr)
 	Dict(
 		((length(arr) == 1) ? "var" : "vars") => Dict(
@@ -36,14 +37,27 @@ end
 """
 TODO: Add description.
 """
-function get_array_simple_details(arr::Array) # TODO: Better typing definition
-	Dict(
-		((length(arr) == 1) ? "var" : "vars") => Dict(
-			"names" => map(string, arr),
-		),
-		((length(arr) == 1) ? "vars" : "var") => false,
-	)
+function get_array_simple_details(arr::Union{Symbol, Array{Symbol}, Vector{Tuple{Symbol, Symbol}}}) # TODO: Better typing definition
+    if isa(arr, Symbol)  # Check if the input is a single Symbol
+        return Dict(
+            "var" => Dict("names" => string(arr)),
+            "vars" => false
+        )
+    elseif isa(arr, Vector{Tuple{Symbol, Symbol}})  # Check if the input is a Vector{Tuple{Symbol, Symbol}}
+        return Dict(
+            "vars" => Dict("names" => string(arr)),
+            "var" => false
+        )
+    else
+        Dict(
+            ((length(arr) == 1) ? "var" : "vars") => Dict(
+                "names" => string(arr),
+            ),
+            ((length(arr) == 1) ? "vars" : "var") => false,
+        )
+    end
 end
+
 
 """
 Gets the position of a name in names.

@@ -169,6 +169,7 @@ function latex(
 		rm(path*".zip", force=true)
 		zip_folder(tempfolder, path*".zip")
 		return dict
+		
 	end
 	rm(tempfolder, force = true, recursive = true)
 end
@@ -190,6 +191,15 @@ function latex!(
 	preprocessing_dict = merge(preprocessing_dict_original,user_input_dict)
 	preprocessing_dict["equation"] = join(map(x -> "$x", filter(x -> x != :_cons, preprocessing_dict["datanames"])), " ")
 	preprocessing_dict["datanames"] = string("[:", join(preprocessing_dict["datanames"], ", :"), "]")
+	
+	if "fixedvariables" in keys(preprocessing_dict)
+		preprocessing_dict["fixedvariables"] = string("[:", join(preprocessing_dict["fixedvariables"], ", :"), "]")
+	end
+
+	if "criteria" in keys(preprocessing_dict)
+		preprocessing_dict["criteria"] = string("[:", join(preprocessing_dict["criteria"], ", :"), "]")
+	end
+
 	preprocessing_dict["descriptive"] = []
 
 	datanames_index = ModelSelection.create_datanames_index(data.original_data.expvars)
@@ -219,6 +229,7 @@ function latex!(
 	if "seasonaladjustment" in keys(preprocessing_dict) && preprocessing_dict["seasonaladjustment"] !== nothing
 		preprocessing_dict["seasonaladjustment"] = get_array_details(preprocessing_dict["seasonaladjustment"])
 	end
+
 	dict[string(Preprocessing.PREPROCESSING_EXTRAKEY)] = preprocessing_dict
 
 	# FeatureExtraction
@@ -226,20 +237,24 @@ function latex!(
 		data.extras[FeatureExtraction.FEATUREEXTRACTION_EXTRAKEY]
 		featureextraction_dict = process_dict(data.extras[FeatureExtraction.FEATUREEXTRACTION_EXTRAKEY])
 		if "fe_lag" in keys(featureextraction_dict)
+			preprocessing_dict["fe_lag"] = replace(string(preprocessing_dict["fe_lag"]), "Symbol" => "")
 			featureextraction_dict["fe_lag"] = get_array_details(featureextraction_dict["fe_lag"])
 		end
 		if "fe_log" in keys(featureextraction_dict)
-			featureextraction_dict["fe_log"] = replace(string(featureextraction_dict["fe_log"]), "Symbol" => "")
+			preprocessing_dict["fe_log"] = string("[:", join(preprocessing_dict["fe_log"], ", :"), "]")
+			featureextraction_dict["fe_log"] = get_array_simple_details(featureextraction_dict["fe_log"])
 		end
 		if "fe_inv" in keys(featureextraction_dict)
-			featureextraction_dict["fe_inv"] = replace(string(featureextraction_dict["fe_inv"]), "Symbol" => "")
+			preprocessing_dict["fe_inv"] = replace(string(preprocessing_dict["fe_inv"]), "Symbol" => "")
+			featureextraction_dict["fe_inv"] = get_array_simple_details(featureextraction_dict["fe_inv"])
 		end
 		if "fe_sqr" in keys(featureextraction_dict)
-			featureextraction_dict["fe_sqr"] = replace(string(featureextraction_dict["fe_sqr"]), "Symbol" => "")
+			preprocessing_dict["fe_sqr"] = replace(string(preprocessing_dict["fe_sqr"]), "Symbol" => "")
+			featureextraction_dict["fe_sqr"] = get_array_simple_details(featureextraction_dict["fe_sqr"])
 		end
 		if "interaction" in keys(featureextraction_dict)
-			featureextraction_dict["interaction"] =
-				get_array_simple_details(featureextraction_dict["interaction"])
+			preprocessing_dict["interaction"] =	replace(string(preprocessing_dict["interaction"]), "Symbol" => "")
+			featureextraction_dict["interaction"] = get_array_simple_details(featureextraction_dict["interaction"])
 		end
 		if !("fe_lag" in keys(featureextraction_dict)) &&
 		   !("fe_log" in keys(featureextraction_dict)) &&

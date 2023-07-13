@@ -53,34 +53,42 @@ In order to implement this model selection algorithm, the following syntax has b
   ModelSelection.gsr({{#input}}
     estimator = {{estimator}},
     equation = "{{equation}}",
-    data = {{data}},
-    method = :{{method}},
-    intercept = {{intercept}},{{#panel}}
+    data = {{data}};{{#method}}
+    method = :{{.}},{{/method}}{{#intercept}}
+    intercept = {{.}},{{/intercept}}{{#panel}}
     panel = {{.}},{{/panel}}{{#time}}
     time = :{{.}},{{/time}}{{#seasonaladjustment}}
     seasonaladjustment = {{.}},{{/seasonaladjustment}}
-    removeoutliers = {{removeoutliers}},{{/input}}{{#featureextraction}}{{#fe_sqr}}
+    removeoutliers = {{removeoutliers}},{{#removemissings}}
+    removemissings = {{.}},{{/removemissings}}{{#fe_sqr}}
     fe_sqr = {{.}},{{/fe_sqr}}{{#fe_log}}
     fe_log = {{.}},{{/fe_log}}{{#fe_inv}}
     fe_inv = {{.}},{{/fe_inv}}{{#fe_lag}}
     fe_lag = {{.}},{{/fe_lag}}{{#interaction}}
-    interaction = {{.}},{{/interaction}}{{/featureextraction}}{{#preliminaryselection}}
-    preliminaryselection = :{{preliminaryselection}},{{/preliminaryselection}}{{#allsubsetregression}}{{#fixedvariables}}
+    interaction = {{.}},{{/interaction}}{{#preliminaryselection}}
+    preliminaryselection = :{{preliminaryselection}},{{/preliminaryselection}}{{#fixedvariables}}
     fixedvariables = {{.}},{{/fixedvariables}}{{#outsample}}
     outsample = {{.}},{{/outsample}}{{#criteria}}
-    criteria = {{.}},{{/criteria}}
-    ttest = {{ttest}},
-    ztest = {{ztest}},
-    modelavg = {{modelavg}},
-    residualtest = {{residualtest}},{{#orderresults}}
-    orderresults = {{.}},{{/orderresults}}{{/allsubsetregression}}{{#crossvalidation}}
-    kfoldcrossvalidation = {{.}},{{/crossvalidation}}{{#kfolds}}
-    numfolds = {{.}},{{/kfolds}}{{#testsetshare}}
-    testsetshare = {{.}}{{/testsetshare}}
+    criteria = {{.}},{{/criteria}}{{#ttest}}
+    ttest = {{.}},{{/ttest}}{{#ztest}}
+    ztest = {{.}},{{/ztest}}{{#modelavg}}
+    modelavg = {{.}},{{/modelavg}}{{#residualtest}}
+    residualtest = {{.}},{{/residualtest}}{{#orderresults}}
+    orderresults = {{.}},{{/orderresults}}{{#kfoldcrossvalidation}}
+    kfoldcrossvalidation = {{.}},{{/kfoldcrossvalidation}}{{#numfolds}}
+    numfolds = {{.}},{{/numfolds}}{{#testsetshare}}
+    testsetshare = {{.}}{{/testsetshare}}{{/input}}
   )
 \end{lstlisting}
 
-The report is structured as follows. After this introduction the methodology is presented. In section 3, descriptive statistics are introduced. {{#preliminaryselection}}After that, LASSO results are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is shown. {{#crossvalidation}}Finally, the last section examines K-fold cross-validation outcomes.{{/crossvalidation}}
+This report is created using the new \verb|ResearchAccelerator.jl|, a new julia package that includes:
+\begin{enumerate}
+  \item extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using \verb|ModelSelection.jl| results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
+  
+  \item AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ResearchAccelerator.jl| will interact with Google Scholar to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/ citations statistics. Finally, a machine learning system with modern NLP models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
+\end{enumerate}
+
+The report is structured as follows. After this introduction, the methodology is presented. In section 3, descriptive statistics about the specified data are exhibited.{{#preliminaryselection}} After that, preliminary selection results based on LASSO are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is depicted, considering the estimator selected by the user.{{#crossvalidation}} Thereupon, the next section examines K-fold cross-validation outcomes.{{/crossvalidation}} Finally, potentially relevant bibliography in provided, as well as similarity network based on keywords introduced by the users.
 
 \section{Methodology}
 
@@ -108,7 +116,7 @@ It performs required variable transformations to improve model accuracy and feat
 {{#featureextraction}}
 \subsection{Feature extraction}
 
-In this stage, selected functions have been used to create additional covariates with the following transformations:  
+In this stage, the following functions have been used to create additional covariates:  
 
 \begin{enumerate}
   {{#fe_lag}}
@@ -121,38 +129,40 @@ In this stage, selected functions have been used to create additional covariates
   {{/fe_lag}}
   {{#fe_log}}
     {{#vars}}
-    \item Logs: for variables {{#names}}{{.}}, {{/names}}the logarithm transformation was applied to generate new covariates.
+    \item Logs: for variables {{#names}}{{.}}, {{/names}}the logarithm transformation was applied.
     {{/vars}}
     {{#var}}
-    \item Logs: for variable {{#names}}{{.}}{{/names}}, the logarithm transformation was applied to generate a new covariate.
+    \item Logs: for variable {{#names}}{{.}}{{/names}}, the logarithm transformation was applied.
     {{/var}}
   {{/fe_log}}
   {{#fe_inv}}
     {{#vars}}
-    \item Inverse: for variables {{#names}}{{.}}, {{/names}}the inverse function was implemented to create additional covariates.
+    \item Inverse: for variables {{#names}}{{.}}, {{/names}}the inverse function was implemented.
     {{/vars}}
     {{#var}}
-    \item Inverse: for variable {{#names}}{{.}}{{/names}}, the inverse function was implemented to create an additional covariate.
+    \item Inverse: for variable {{#names}}{{.}}{{/names}}, the inverse function was implemented.
     {{/var}}
   {{/fe_inv}}
   {{#fe_sqr}}
     {{#vars}}
-    \item Squares: for variables {{#names}}{{.}}, {{/names}}the square transformation was implemented to create additional explanatory variables.
+    \item Squares: for variables {{#names}}{{.}}, {{/names}}the square transformation was used.
     {{/vars}}
     {{#var}}
-    \item Squares: for variable {{#names}}{{.}}{{/names}}, the square transformation was implemented to create an additional explanatory variable.
+    \item Squares: for variable {{#names}}{{.}}{{/names}}, the square transformation was used.
     {{/var}}
   {{/fe_sqr}} 
   {{#interaction}}
     {{#vars}}
-    \item Interactions: for variables {{#names}}{{.}}, {{/names}}all possible first-level interactions were created as additional covariates.
+    \item Interactions: for variables {{#names}}{{.}}, {{/names}}all possible first-level interactions were created.
     {{/vars}}
     {{#var}}
-    \item Interactions: for variable {{#names}}{{.}}{{/names}}, all possible first-level interactions were created as an additional covariate.
+    \item Interactions: for variable {{#names}}{{.}}{{/names}}, all possible first-level interactions were created.
     {{/var}}
   {{/interaction}}
 \end{enumerate}
 {{/featureextraction}}
+
+{{#input}}
 {{#preliminaryselection}}
 \subsection{Regularization - LASSO}
 The Least Absolute Shrinkage and Selection Operator (LASSO) algorithm is a type of regularized linear regression that uses shrinkage (see \cite{tibshirani1996}) to obtain simple sparse models. This particular type of regression is well-suited for feature selection in models with high levels of muticollinearity, and particularly efficient in fat-data scenarios.
@@ -176,15 +186,16 @@ In this report, the $\lambda$ parameter has been dynamically defined in order to
 
 It must be noticed that all predictors are standardized "on-the-fly", in order to avoid scale issues in feature selection.
 {{/preliminaryselection}}
+{{/input}}
 
 {{#allsubsetregression}}
 \subsection{All-subset-Regression}
 Unlike other feature selection algorithms (including LASSO), All-subset-regression (ASR) approaches guarantees both in-sample and out-of-sample optimality (i.e. better information criteria results than any other method). However, it has been left aside by econometricians and machine learning practitioners because of computational concerns. Execution times for ASR algorithms in a more-than-20-covariates environement were prohibitive until now. Using existing ASR packages, a simple feature selection problem for 20 covariates usually takes more than 8000 seconds in 
 \href{https://cran.r-project.org/web/packages/MuMIn/MuMIn.pdf}{R}, and more than 500000 seconds in \href{https://ideas.repec.org/c/boc/bocode/s457737.html#download}{Stata}. Moreover, with 25 potential covariates both algorithms are unable to obtain feasible-solutions in standard personal computers.
 
-Fortunately, the \verb|ResearchAccelerator.jl| package has significantly reduced execution times, running up to 3165 times faster than Stata and 197 times faster than R (see \cite{gsreg2019}). This improvement allows researchers to regain attention on ASR algorithms, looking for better feature selection results.
+Fortunately, the \verb|ModelSelection.jl| package has significantly reduced execution times, running up to 3165 times faster than Stata and 197 times faster than R (see \cite{gsreg2019}). This improvement allows researchers to regain attention on ASR algorithms, looking for better feature selection results.
 
-In this Julia package, the best model among $2^{n}-1$ alternatives is selected using a potentially composite ordering variable defined as the equally-weighted average of normalized (to guarantee equal weights) and harmonized (to ensure that higher values always identify better models) user's specified criteria. For in-sample adjustment, available alternatives include: Adjusted R2 (:r2adj, the default), Bayesian information criteria (:bic), Akaike and Corrected Akaike information criteria (:aic and :aicc), Mallows's Cp statistic (:cp), Sum of squared errors (also known as Residual sum of squares, :sse) and the Root mean square error (:rmse). For out-of-sample accuracy, there is available the out-of-sample root mean square error (:rmsout). Users are free to combine in-sample and out-of-sample information criteria. In this report, selected information criteria include ({{criteria}}) as the key variable/s for feature selection.
+In this Julia package, the best model among $2^{n}-1$ alternatives are selected using a potentially composite ordering variable defined as the equally-weighted average of normalized (to guarantee equal weights) and harmonized (to ensure that higher values always identify better models) user's specified criteria. For in-sample adjustment, available alternatives include: Adjusted R2 (:r2adj, the default), Bayesian information criteria (:bic), Akaike and Corrected Akaike information criteria (:aic and :aicc), Mallows's Cp statistic (:cp), Sum of squared errors (also known as Residual sum of squares, :sse) and the Root mean square error (:rmse). For out-of-sample accuracy, there is available the out-of-sample root mean square error (:rmsout). Users are free to combine in-sample and out-of-sample information criteria. In this report, selected information criteria include {{#criteria}}{{.}}{{/criteria}} as the key variable/s for feature selection.
 
 Additional options applied in this report includes:
 
@@ -201,20 +212,25 @@ Additional options applied in this report includes:
   {{#modelavg}}
   \item Across-models' average coefficients, t-tests and additional statistics were obtained using combined-criteria exponential weights because of the modelavg=true option. More precisely, each alternative model has a weight given by w1/sum(w1), where w1 is defined as exp(-delta/2) and delta is equal to max(index)-index -- where index is the above mentioned normalized, harmonized and potentially combined selection criteria--.
   {{/modelavg}}
+  {{^time}}
   {{#residualtest}}
   \item The residualtest=true option enables white heteroskedasticity and Jarque-Bera normality test to be implemented for each model.
   {{/residualtest}}
+  {{/time}}
+  {{#time}}
   {{#residualtest}}
   \item The residualtest=true option enables white heteroskedasticity, Jarque-Bera normality test and the Breusch-Godfrey test for autocorrelation to be implemented for each model.
   {{/residualtest}}
+  {{/time}}
   {{#orderresults}}  
   \item User's specification of orderresults=true entails that the output matrix has been sorted by the the above mentioned normalized, harmonized and potentially combined selection criteria.
   {{/orderresults}}
 \end{enumerate}
 {{/allsubsetregression}}
+
+
 {{#crossvalidation}}
 \subsection{K-fold Cross Validation}
-
 Cross-validation (CV) is a procedure used to examine feature selection robustness to re-sampling. Among different alternatives, the K-fold approach has a parameter $K$ which identifies the number of groups that a given database must be split into (see \cite{arlot2010}). In this report user selected k-fold number is {{kfolds}}.
 
 The general procedure is as follows:
@@ -231,7 +247,7 @@ The general procedure is as follows:
   \item Summarize model strengths using CV scores
 \end{enumerate}
 
-In \verb|ResearchAccelerator.jl|  the K-fold cross-validation is available for both LASSO pre-selection and ASR final selection. In the latter, for each K-partition $2^{p} - 1$ alternative models are fitted (where p is the number of potential covariates included in the ASR algorithm) and the candidate ‘optimal’ model is selected using the out-of-sample Root Mean Square Error (obtained from the test set). Therefore, K-candidate models are retained (one for each K-partition). The final "best" model is obtained using either across-model averages or medians.
+In \verb|ModelSelection.jl| the K-fold cross-validation is available for both LASSO pre-selection and ASR final selection. In the latter, for each K-partition $2^{p} - 1$ alternative models are fitted (where p is the number of potential covariates included in the ASR algorithm) and the candidate ‘optimal’ model is selected using the out-of-sample Root Mean Square Error (obtained from the test set). Therefore, K-candidate models are retained (one for each K-partition). The final "best" model is obtained using either across-model averages or medians.
 
 This cross-validation specific alternative has been denominated as \textit{Averaging Cross validation (ACV)} by Jung and Hu (see, \cite{jung2015}). The authors found that:
 
@@ -244,7 +260,8 @@ This cross-validation specific alternative has been denominated as \textit{Avera
 It is worth mentioning that K-fold preferred methodologies change depending on whether cross-section, time-series or panel data observations are employed. For the first one, standard K-fold random allocation is the gold-standard (see \cite{arlot2010}). 
 
 {{#time}}
-For time series, however, this methodology could decrease model selection accuracy because -potential- serial correlation violate the cross-validation fundamental assumption of i.i.d. data (see \cite{bergmeir2012}). Among available alternatives, most widely used are non-dependent k-fold cross-validation (see \cite{bergmeir2018}) and rolling forecast origin cross-validation (based on \cite{hyndman2013}). Unfortunately, the  first one entails an inefficient use of available information and second one has comparison problems for the above mentioned ACV approach (because each sampling partition has a different training set size). Therefore, \verb|ResearchAccelerator.jl| uses a slightly modified version of the rolling forecast origin cross-validation, with the following steps:
+For time series, however, this methodology could decrease model selection accuracy because -potential- serial correlation violate the cross-validation fundamental assumption of i.i.d. data (see \cite{bergmeir2012}). Among available alternatives, most widely used are non-dependent k-fold cross-validation (see \cite{bergmeir2018}) and rolling forecast origin cross-validation (based on \cite{hyndman2013}). Unfortunately, the  first one entails an inefficient use of available information and second one has comparison problems for the above mentioned ACV approach (because each sampling partition has a different training set size). Therefore, \verb|ModelSelection.jl| uses a slightly modified version of the rolling forecast origin cross-validation, with the following steps:
+
 
 \begin{enumerate}
 \item User defines the rolling test-set share ($s1$) and the number of sub-samples (K);
@@ -284,6 +301,7 @@ where $T$ is the total number of observations.
 In this report the test size has been set to {{tsetsize}} and, as already mentioned,
 selected k-fold number is {{kfolds}}.
 {{/time}}
+
 {{#panelid}}
 For panel data, cross-validation techniques are similar to time-series ones, but stratified by panel-id (because panel databases can be unbalanced). More precisely, the cross-validation strategy is defined by:
 
@@ -327,15 +345,13 @@ Main descriptive statistics for All-subset-regression potential covariates are p
   \caption{Descriptive Statistics for the main dataset}
     \begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|}
     \hline
-    Variable & Description & Obs. & Mean & Sd & Max & Min & \% Miss \\
+    Variable & Obs. & Mean & Sd & Max & Min & \% Miss \\
     \hline
     \hline
     {{#descriptive}}{{^name}}
     \hline
     \end{tabular}
 \end{table}
-
-\clearpage
 
 \begin{table}[!h]
   \centering
@@ -345,12 +361,13 @@ Main descriptive statistics for All-subset-regression potential covariates are p
     Variable & Description & Obs. & Mean & Sd & Max & Min & \% Miss \\
     \hline
     \hline
-    {{/name}}{{#name}}{{name}} &  & {{nobs}} & {{mean}} & {{std}} & {{max}} & {{min}} & {{miss}}\% \\ 
+    {{/name}}{{#name}}{{name}} & {{nobs}} & {{mean}} & {{std}} & {{max}} & {{min}} & {{miss}}\% \\ 
     {{/name}}{{/descriptive}}\hline
     \end{tabular}
 \end{table}
 {{/input}}
 
+{{#input}}
 {{#preliminaryselection}}
 \section{Regularization results}
 
@@ -363,25 +380,25 @@ LASSO regression is shown in the following table:
     \hline
     \hline
               & \\
-    Variables & {{ depvar }} \\
+    Variables & {{depvar}} \\
     \hline
     \hline
     {{#expvssars}}
-      {{ name }} & {{ coef }} \\
+      {{name}} & {{coef}} \\
     {{/expvssars}}
     \hline
     \hline
-    Observations &  {{ nobs }} \\
-    \lambda      &  {{ lassolambda }} \\
+    Observations &  {{nobs}} \\
+    $\lambda$      &  {{lassolambda}} \\
     \hline
     \end{tabular}
-  \label{tab:addlabel}
+  %\label{tab:addlabel}
 \end{table}
 {{/preliminaryselection}}
 
+%\clearpage
 {{#allsubsetregression}}
 
-\clearpage
 \section{Global Search Regression}
 
 \subsection{All sub-subset regression: Best Model and Model Averaging}
@@ -409,9 +426,10 @@ LASSO regression is shown in the following table:
     \multicolumn{ {{^avg}}2{{/avg}} {{#avg}}3{{/avg}} }{c}{*** p < 0.01, ** p < 0.05, * p < 0.1} \\
     \end{tabular}
     {{/bestmodel}}
-  \label{tab:addlabel}
+  %\label{tab:addlabel}
 \end{table}
 
+\clearpage
 \subsection{Coefficient, t-test and selection criteria gains distributions}
 
 In the following pages, coefficient, t-test and selection criteria distributions are presented. For each covariate, four figures are included: two bivariate density plots (a contour plot and a wireframe plot, for coefficients and t-tests distributions) and two selection criteria contribution plots (a Kernel density plot and a combined Box-Violin plot). The last two plots are used to see the combined\_criteria\_index variation explained by the inclusion of each covariate in the models. 

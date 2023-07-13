@@ -12,6 +12,6 @@ using ..Output
 
 export Output
 export researchaccelerator
-
+ 
 end
 
