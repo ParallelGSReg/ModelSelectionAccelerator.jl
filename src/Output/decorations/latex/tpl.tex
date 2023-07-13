@@ -282,8 +282,8 @@ where $T$ is the total number of observations.
 \begin{itemize}
   \item[] for $i=1:K$
   \begin{itemize}
-    \item[]  Training\_i=data[i:s2*T,:]
-    \item[] Test\_i=data[(s2 \times T+i):((s2 \times T+i)+(s1 \times T)-1),:]
+    \item[]  $Training_i=data[i:s2*T,:]$
+    \item[]  $Test_i=data[(s2 \times T+i):((s2 \times T+i)+(s1 \times T)-1),:]$
   \end{itemize}
   \item[] end
 \end{itemize}
@@ -321,8 +321,8 @@ where $T{j}$ is the total number of time series observations for panel-id = j.
     \begin{itemize}
         \item[]  for $j=1:Q$
         \begin{itemize}
-            \item[] Training\_i\_j=data[i:s2 \times T{j},:]
-            \item[] Test\_i\_j=data[(s2 \times T{j}+i):((s2 \times T{j}+i)+(s1 \times T{j})-1),:]
+            \item[] $Training_{ij}=data[i:s2 \times T{j},:]$
+            \item[] $Test_{ij}=data[(s2 \times T{j}+i):((s2 \times T{j}+i)+(s1 \times T{j})-1),:]$
         \end{itemize}
         \item[] end
     \end{itemize}
