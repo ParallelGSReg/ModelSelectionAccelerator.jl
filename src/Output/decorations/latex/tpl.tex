@@ -58,13 +58,13 @@ In order to implement this model selection algorithm, the following syntax has b
     intercept = {{.}},{{/intercept}}{{#panel}}
     panel = {{.}},{{/panel}}{{#time}}
     time = :{{.}},{{/time}}{{#seasonaladjustment}}
-    seasonaladjustment = {{.}},{{/seasonaladjustment}}
+    seasonaladjustment = {{{.}}},{{/seasonaladjustment}}
     removeoutliers = {{removeoutliers}},{{#removemissings}}
     removemissings = {{.}},{{/removemissings}}{{#fe_sqr}}
     fe_sqr = {{.}},{{/fe_sqr}}{{#fe_log}}
     fe_log = {{.}},{{/fe_log}}{{#fe_inv}}
     fe_inv = {{.}},{{/fe_inv}}{{#fe_lag}}
-    fe_lag = {{.}},{{/fe_lag}}{{#interaction}}
+    fe_lag = {{{.}}},{{/fe_lag}}{{#interaction}}
     interaction = {{.}},{{/interaction}}{{#preliminaryselection}}
     preliminaryselection = :{{preliminaryselection}},{{/preliminaryselection}}{{#fixedvariables}}
     fixedvariables = {{.}},{{/fixedvariables}}{{#outsample}}
@@ -121,7 +121,7 @@ In this stage, the following functions have been used to create additional covar
 \begin{enumerate}
   {{#fe_lag}}
     {{#vars}}
-    \item Lags: for variables {{#names}}{{.}}, {{/names}}the lag operator created lag polinominals of order {{#values}}{{.}}, {{/values}}respectively, as additional explanatory variables.
+    \item Lags: for variables {{#names}}{{{.}}}, {{/names}}the lag operator created lag polinominals of order {{#values}}{{{.}}}, {{/values}}respectively, as additional explanatory variables.
     {{/vars}}
     {{#var}}
     \item Lags: for variable {{#names}}{{.}}{{/names}}, the lag operator created a lag polinominal of order {{#values}}{{.}}{{/values}}, as an additional explanatory variable.
@@ -439,7 +439,7 @@ Finally, we include a unique figure where covariate relative performance is comp
 
 {{#expvarswithoutcons}}
 \begin{center}
-    \large{\textbf{Coefficient, t-test and selection criteria gains distributions for {{name}} }}
+    \large{\textbf{Coefficient, t-test and selection criteria gains distributions for {{{name2}}} }}
 \end{center}
 
 \vspace{-5mm}

@@ -200,7 +200,7 @@ function latex!(
 	preprocessing_dict["descriptive"] = []
 
 	if !isnothing(data.fixedvariables)
-		expvars_des = append!(copy(data.original_data.expvars),data.fixedvariables)
+		expvars_des = vcat(data.fixedvariables, data.original_data.expvars)
 		expvar_data = hcat(copy(data.original_data.expvars_data), data.original_data.fixedvariables_data)
 	else
 		expvars_des = copy(data.original_data.expvars)
@@ -321,8 +321,7 @@ function latex!(
 		datanames_index = ModelSelection.create_datanames_index(result.datanames)
 		
 		if !isnothing(data.fixedvariables)
-			expvars_gsr = copy(data.expvars)
-			append!(expvars_gsr, data.fixedvariables)
+			expvars_gsr = vcat(data.fixedvariables, data.expvars)
 		else
 			expvars_gsr = data.expvars
 		end
@@ -335,7 +334,7 @@ function latex!(
 		d_bestmodel["depvar"] = data.depvar
 		d_bestmodel["bmexpvars"] = []
 
-		for var in data.expvars
+		for var in expvars_gsr
 			intercept = if (data.intercept)
 				1
 			else
@@ -346,14 +345,14 @@ function latex!(
 			d["nobs"] = result.nobs
 			d["criteria"] = result.criteria
 
-			if (var in data.expvars[cols] && !isnan(result.bestresult_data[datanames_index[Symbol("$(var)_b")]]))
+			if (var in expvars_gsr[cols] && !isnan(result.bestresult_data[datanames_index[Symbol("$(var)_b")]]))
 				d["best"] = Dict()
 				d["best"]["b"] = @sprintf("%.3f", result.bestresult_data[datanames_index[Symbol("$(var)_b")]])
 				if (result.ttest)
 					d["best"]["ttest"] = true
 					d["best"]["bstd"] = @sprintf("%.3f", result.bestresult_data[datanames_index[Symbol("$(var)_bstd")]])
 					t = result.bestresult_data[datanames_index[Symbol("$(var)_t")]]
-					prob_t = pdf(TDist(data.nobs - length(data.expvars) - (
+					prob_t = pdf(TDist(data.nobs - length(expvars_gsr) - (
 						if data.intercept
 							1
 						else
@@ -384,7 +383,7 @@ function latex!(
 					d["avg"]["ttest"] = true
 					d["avg"]["bstd"] = @sprintf("%.3f", result.modelavg_data[datanames_index[Symbol("$(var)_bstd")]])
 					t = result.modelavg_data[datanames_index[Symbol("$(var)_t")]]
-					prob_t = pdf(TDist(data.nobs - length(data.expvars) - (
+					prob_t = pdf(TDist(data.nobs - length(expvars_gsr) - (
 						if data.intercept
 							1
 						else
@@ -423,7 +422,7 @@ function latex!(
 				t_poscol = filter(x -> x > 0, t_nnan)
 				b_poscol = filter(x -> x > 0, b_nnan)
 
-				prob_t = map(it -> pdf(TDist(data.nobs - length(data.expvars) - (
+				prob_t = map(it -> pdf(TDist(data.nobs - length(expvars_gsr) - (
 					if data.intercept
 						1
 					else
@@ -432,6 +431,7 @@ function latex!(
 				)), it), t)
 				Dict(
 					"name" => var,
+					"name2" => replace(string(var), "_" => "\\_"),
 					"posshare" => @sprintf("%.3f", size(b_poscol, 1) / size(b_nnan, 1)),
 					"sigshare" => @sprintf("%.3f", size(filter(p -> p < 0.1, prob_t), 1) / size(b_nnan, 1)),
 					"t" => get_col_statistics(t), 
@@ -441,7 +441,7 @@ function latex!(
 
 		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvars"] = expvars_dict
 		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["expvarswithoutcons"] =
-			filter(x -> x["name"] != :_cons, expvars_dict)
+				filter(x -> x["name"] != :_cons, expvars_dict)
 		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["bestmodel"] = d_bestmodel
 
 		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] != nothing

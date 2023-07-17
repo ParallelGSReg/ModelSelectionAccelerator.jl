@@ -27,8 +27,9 @@ function get_array_details(arr::Union{Symbol, Array{Symbol}, Dict{Symbol, Int64}
 	dict = Dict(arr)
 	Dict(
 		((length(arr) == 1) ? "var" : "vars") => Dict(
-			"names" => map(string, collect(keys(dict))),
-			"values" => collect(values(dict)),
+			#"names" => map(string, collect(keys(dict))),
+			"names" => string(collect(keys(dict))),
+			"values" => string(collect(values(dict))),
 		),
 		((length(arr) == 1) ? "vars" : "var") => false,
 	)
