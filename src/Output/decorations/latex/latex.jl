@@ -10,28 +10,19 @@ Create required figures by the template. Generate png images into the dest folde
 
 function create_figures(data::ModelSelectionData, destfolder::String)
 	
-	# Remove old graphs
+	# Remove old graphs for check
 	#foreach(rm, filter(endswith(".png"), readdir(destfolder,join=true)))
 
 	# Exogenous var vector (including fixed variables)
-	expvars2 = filter(x -> x != :_cons, data.expvars)
-	if data.fixedvariables != []
-		expvars2 = append!(expvars2,filter(x -> x != :_cons, data.fixedvariables))
+	if !isnothing(data.fixedvariables)
+		expvars2 = append!(copy(filter(x -> x != :_cons, data.expvars)), data.fixedvariables)
+	else
+		expvars2 = copy(filter(x -> x != :_cons, data.expvars))
 	end
 	
-	# Criteria diff matrix
-	criteria_diff = Array{Any}(undef, (length(expvars2) - length(data.fixedvariables)), 2)
+	criteria_diff = Array{Any}(undef, length(filter(x -> x != :_cons, data.expvars)), 2)
 
-	# Criteria vector / sacar de aca
-	criteria_vec = data.results[1].criteria
-
-	# Criteria 
-	if length(data.results[1].criteria) > 1
-		order = ResearchAccelerator.get_column_index(:order, data.results[1].datanames)
-	else
-		order = ResearchAccelerator.get_column_index(Symbol(data.results[1].criteria[1]), data.results[1].datanames)
-	end
-
+	order = ResearchAccelerator.get_column_index(:order, data.results[1].datanames)
 	for (i, expvar) in enumerate(expvars2)
 
 		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
@@ -70,18 +61,24 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 				plot(p1, ylabel = "Weighted Average of Selected Criteria") 
 				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
 			else
-				plot(p1, ylabel = "Selected Criteria:"*" "*String(data.results[1].criteria[1])) 
-				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
+				if data.options[:estimator] == :ols
+					plot(p1, ylabel = "Selected Criteria:"*" "*String(:r2adj)) 
+					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
+				else
+					plot(p1, ylabel = "Selected Criteria:"*" "*String(:pseudo_r2adj)) 
+					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
+				end
 			end
 
 			criteria_diff[i, 1] = mean(criteria_with) - mean(criteria_without)
 			criteria_diff[i, 2] = "$(expvar)"
 		end
 	end
-	
+
 	criteria_diff_sort = sortslices(criteria_diff, dims = 1)
 	labels = convert(Array{String}, criteria_diff_sort[:, 2])
 	bar(criteria_diff_sort[:, 1], orientation=:h, yticks=(1:size(criteria_diff_sort,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the Selected Criteria")
+	xlims!(extrema(criteria_diff_sort[:, 1]))
 	savefig(joinpath(destfolder, "cov_relevance.png"))    
 	
 	numofpositivegainsvariables = size(findall(x -> x > 0, criteria_diff_sort[:, 1]), 1)
@@ -202,10 +199,18 @@ function latex!(
 
 	preprocessing_dict["descriptive"] = []
 
-	datanames_index = ModelSelection.create_datanames_index(data.original_data.expvars)
-
-	for (i, var) in enumerate(data.original_data.expvars)
-		orig = data.original_data.expvars_data[:, datanames_index[var]]
+	if !isnothing(data.fixedvariables)
+		expvars_des = append!(copy(data.original_data.expvars),data.fixedvariables)
+		expvar_data = hcat(copy(data.original_data.expvars_data), data.original_data.fixedvariables_data)
+	else
+		expvars_des = copy(data.original_data.expvars)
+		expvar_data = copy(data.original_data.expvars_data)
+	end
+	
+	datanames_index = ModelSelection.create_datanames_index(expvars_des)
+	expvars_des = filter(x -> x != :_cons, expvars_des)
+	for (i, var) in enumerate(expvars_des)
+		orig = expvar_data[:, datanames_index[var]]
 		obs = collect(skipmissing(orig))
 		c_obs = length(obs)
 		c_miss = length(orig) - c_obs
@@ -267,6 +272,7 @@ function latex!(
 	end
 
 	# PreliminarySelection
+	
 	if PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY in keys(data.extras)
 		dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)] = process_dict(data.extras[PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY])
 
@@ -313,7 +319,15 @@ function latex!(
 		end
 
 		datanames_index = ModelSelection.create_datanames_index(result.datanames)
-		cols = ModelSelection.get_selected_variables(Int64(result.bestresult_data[datanames_index[:index]]), data.expvars, data.intercept)
+		
+		if !isnothing(data.fixedvariables)
+			expvars_gsr = copy(data.expvars)
+			append!(expvars_gsr, data.fixedvariables)
+		else
+			expvars_gsr = data.expvars
+		end
+		
+		cols = ModelSelection.get_selected_variables(Int64(result.bestresult_data[datanames_index[:index]]), expvars_gsr, data.intercept)
 
 		# FIXME What?? modelavg_datanames = ResearchAccelerator.AllSubsetRegression.get_varnames(result.modelavg_datanames)
 

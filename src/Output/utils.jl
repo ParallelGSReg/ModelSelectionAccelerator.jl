@@ -22,7 +22,7 @@ end
 """
 TODO: Add description.
 """
-function get_array_details(arr::Union{Symbol, Array{Symbol}}) # TODO: Better typing definition
+function get_array_details(arr::Union{Symbol, Array{Symbol}, Dict{Symbol, Int64}}) # TODO: Better typing definition
 	
 	dict = Dict(arr)
 	Dict(
