@@ -148,23 +148,37 @@ function latex(
 	data::ModelSelectionData,
 	originaldata::ModelSelectionData;
 	path::Union{String, Nothing} = DEFAULT_LATEX_DEST_FOLDER,
+	bib_gen::Bool = false
 )
 	tempfolder = tempname()
 	mkdir(tempfolder)
 	addextras(data, :latex, nothing, tempfolder)
+	
 	if size(data.results, 1) > 0
+		
 		dict = Dict()
+		
 		latex!(dict, data, originaldata)
+		
 		for i in 1:size(data.results, 1)
 			latex!(dict, data, originaldata, data.results[i])
 		end
+		
 		create_workspace(tempfolder)
+		
+		
 		if data.results[1].ttest
 			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["intelligent_text"] = create_figures(data, tempfolder)
 		end
+
+		if bib_gen
+			dict["bib_gen"] = true
+		end
+
 		render_latex(dict, tempfolder)
 		rm(path*".zip", force=true)
 		zip_folder(tempfolder, path*".zip")
+		
 		return dict
 		
 	end

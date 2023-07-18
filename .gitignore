@@ -9,4 +9,5 @@ aux_file.jl
 /src/Output/graphs_test
 *.zip
 Manifest.toml
+*.bib
 TODO.md

@@ -1,4 +1,3 @@
-const EXPORTLATEX_DEFAULT = "ResearchAccelerator"
 const QUERT_CONST = nothing
 const MAX_CONST = 100
 const SOURCE_CONST = "gscholar"
@@ -7,4 +6,3 @@ const OUTFILE_CONST = "./bib_output.csv"
 const OUTBIB_CONST = "./src/Output/decorations/latex/tpl/bib_output"
 const USERNAME_CONST = "default"
 const PASS_CONST = "default"
-const bib_gen = false

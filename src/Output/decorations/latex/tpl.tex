@@ -548,16 +548,19 @@ In this figure it is shown that potential covariates included in the general unr
 \end{table}
 {{/crossvalidation}}
 
-\addcontentsline{toc}{section}{References} 
+\nocite{*} % Include all entries from the .bib file
+
+\renewcommand{\refname}{ModelSelection References}
+\addcontentsline{toc}{section}{References of ModelSelection} 
 \bibliographystyle{unsrt}  
 \begin{thebibliography}{1}
-
+  
 \bibitem{gsreg2019}
 Panigo D., Glüzmann P., Mocskos, E., Mauri Ungaro, A., Mari, V., and Monzón, N. (2019). \textit{ResearchAccelerator.jl: Building bridges between Machine Learning and Econometrics in Fat-Data scenarios}.Paper presented at JuliaCon2019, Baltimore-MD, United States.
-
+  
 \bibitem{hassani2007}
 Hassani H. (2007). \textit{Singular Spectrum Analysis: Methodology and Comparison}. Journal of Data Science, 5, 239-257.
-
+  
 \bibitem{lehmann2013}
 Lehmann, R. (2013). \textit{3 sigma-rule for outlier detection from the viewpoint of geodetic adjustment}. Journal of Surveying Engineering, 139(4), 157-165.
 
@@ -565,7 +568,7 @@ Lehmann, R. (2013). \textit{3 sigma-rule for outlier detection from the viewpoin
 Tibshirani, R. (1996). \textit{Regression shrinkage and selection via the lasso}. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288.
 
 \bibitem{chandrashekar2014}
-Chandrashekar, G., and Sahin, F. (2014). \textit{A survey on feature selection methods}. Computers & Electrical Engineering, 40(1), 16-28.
+Chandrashekar, G., and Sahin, F. (2014). \textit{A survey on feature selection methods}. Computers \& Electrical Engineering, 40(1), 16-28.
 
 \bibitem{gluzmann2015}
 Gluzmann, P., and Panigo, D. (2015). \textit{Global search regression: A new automatic model-selection technique for cross-section, time-series, and panel-data regressions.} The Stata Journal, 15(2), 325-349.
@@ -584,8 +587,15 @@ Bergmeir, C., Hyndman, R. J., and Koo, B. (2018). \textit{A note on the validity
 
 \bibitem{hyndman2013}
 Hyndman, R. J., and Athanasopoulos, G. (2013). Measuring forecast accuracy. Gilliland M, Tashman L, Sglavo U. Business forecasting: practical problems and solutions, 177-84.
-
 \end{thebibliography}
 
+{{#bib_gen}}
+\renewcommand{\refname}{References results obtained from keywords}
+\addcontentsline{toc}{section}{References Integrated AI} 
+\bibliographystyle{unsrt}  
+\begin{thebibliography}
+\bibliography{bib_output} 
+\end{thebibliography}
+{{/bib_gen}}
 
 \end{document}
