@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage{GSReg-style}
+\usepackage{ResearchAccelerator-style}
 
 \title{ResearchAccelerator.jl \\
        \vspace{5mm} SUMMARY REPORT} 
@@ -85,10 +85,28 @@ This report is created using the new \verb|ResearchAccelerator.jl|, a new julia 
 \begin{enumerate}
   \item extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using \verb|ModelSelection.jl| results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
   
-  \item AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ResearchAccelerator.jl| will interact with Google Scholar to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/ citations statistics. Finally, a machine learning system with modern NLP models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
+  \item AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ResearchAccelerator.jl| will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/ citations statistics. Finally, a machine learning system with modern NLP models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
 \end{enumerate}
 
-The report is structured as follows. After this introduction, the methodology is presented. In section 3, descriptive statistics about the specified data are exhibited.{{#preliminaryselection}} After that, preliminary selection results based on LASSO are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is depicted, considering the estimator selected by the user.{{#crossvalidation}} Thereupon, the next section examines K-fold cross-validation outcomes.{{/crossvalidation}} Finally, potentially relevant bibliography in provided, as well as similarity network based on keywords introduced by the users.
+The following sintax was use based on \verb|ResearchAccelerator.jl| package
+
+\begin{lstlisting} 
+  using ResearchAccelerator
+  ResearchAccelerator.researchaccelerator({{#user_input}}{{#input}}
+  data = {{data}}{{/input}}{{#exportlatex}};
+  exportlatex = {{{.}}}{{/exportlatex}}{{#query}},
+  query = {{{.}}}{{/query}}{{#max}},
+  max = {{{.}}}{{/max}}{{#source}}, 
+  source = {{{.}}}{{/source}}{{#method}}, 
+  method = {{{.}}}{{/method}}{{#outfile}}, 
+  outfile ={{{.}}}{{/outfile}}{{#username}},
+  username = {{{.}}}{{/username}}{{#password}},
+  password = {{{.}}}{{/password}} 
+  {{/user_input}})
+\end{lstlisting}
+
+
+The report is structured as follows. After this introduction, the methodology is presented. In section 3, descriptive statistics about the specified data are exhibited.{{#preliminaryselection}} After that, preliminary selection results based on LASSO are examined.{{/preliminaryselection}} Then, All-subset-regression analysis is depicted, considering the estimator selected by the user.{{#crossvalidation}} Thereupon, the next section examines K-fold cross-validation outcomes.{{/crossvalidation}}{{#bib_gen}} Finally, potentially relevant bibliography in provided, as well as similarity network based on keywords introduced by the users.{{/bib_gen}} 
 
 \section{Methodology}
 
@@ -418,12 +436,15 @@ LASSO regression is shown in the following table:
                  & {{#best}}{{bstd}}{{/best}}       {{#avg}} & {{bstd}} {{/avg}} \\{{/ttest}}
     {{/bmexpvars}}\hline
 
-    Observations &   \multicolumn{ {{^avg}}1{{/avg}} {{#avg}}2{{/avg}} }{c}{ {{ nobs }} } \\
-    Criteria     &   \multicolumn{ {{^avg}}1{{/avg}} {{#avg}}2{{/avg}} }{c}{ {{ criteria }} } \\
+    Observations &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{ nobs }} } \\
+    Criteria     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{ criteria }} } \\ {{#residualtest_fortext}}
+    Heteroskedasticity (White Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#wtest}}{{.}}{{/wtest}} } \\
+    Normality (Jarque-Bera Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#jbtest}}{{.}}{{/jbtest}} } \\
+    Autocorrelation (Breusch-Godfrey Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#bgtest}}{{.}}{{/bgtest}} } {{/residualtest_fortext}}\\
     \hline
     \hline
-    \multicolumn{ {{^avg}}2{{/avg}} {{#avg}}3{{/avg}} }{c}{Standard errors in parentheses} \\
-    \multicolumn{ {{^avg}}2{{/avg}} {{#avg}}3{{/avg}} }{c}{*** p < 0.01, ** p < 0.05, * p < 0.1} \\
+    \multicolumn{ {{^modelavg}}2{{/modelavg}} {{#modelavg}}3{{/modelavg}} }{c}{Standard errors in parentheses} \\
+    \multicolumn{ {{^modelavg}}2{{/modelavg}} {{#modelavg}}3{{/modelavg}} }{c}{*** p < 0.01, ** p < 0.05, * p < 0.1} \\
     \end{tabular}
     {{/bestmodel}}
   %\label{tab:addlabel}
@@ -550,6 +571,13 @@ In this figure it is shown that potential covariates included in the general unr
 
 \nocite{*} % Include all entries from the .bib file
 
+{{#bib_gen}}
+\renewcommand{\refname}{References results obtained from keywords}
+\addcontentsline{toc}{section}{References Integrated AI} 
+\bibliographystyle{unsrt}  
+\bibliography{bib_output} 
+{{/bib_gen}}
+
 \renewcommand{\refname}{ModelSelection References}
 \addcontentsline{toc}{section}{References of ModelSelection} 
 \bibliographystyle{unsrt}  
@@ -589,13 +617,5 @@ Bergmeir, C., Hyndman, R. J., and Koo, B. (2018). \textit{A note on the validity
 Hyndman, R. J., and Athanasopoulos, G. (2013). Measuring forecast accuracy. Gilliland M, Tashman L, Sglavo U. Business forecasting: practical problems and solutions, 177-84.
 \end{thebibliography}
 
-{{#bib_gen}}
-\renewcommand{\refname}{References results obtained from keywords}
-\addcontentsline{toc}{section}{References Integrated AI} 
-\bibliographystyle{unsrt}  
-\begin{thebibliography}
-\bibliography{bib_output} 
-\end{thebibliography}
-{{/bib_gen}}
 
 \end{document}

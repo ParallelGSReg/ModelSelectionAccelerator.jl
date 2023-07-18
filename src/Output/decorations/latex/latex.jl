@@ -148,7 +148,8 @@ function latex(
 	data::ModelSelectionData,
 	originaldata::ModelSelectionData;
 	path::Union{String, Nothing} = DEFAULT_LATEX_DEST_FOLDER,
-	bib_gen::Bool = false
+	bib_gen::Bool = false,
+	user_input::Dict
 )
 	tempfolder = tempname()
 	mkdir(tempfolder)
@@ -175,6 +176,10 @@ function latex(
 			dict["bib_gen"] = true
 		end
 
+		if !isnothing(user_input)
+			dict["user_input"] = user_input
+		end
+			
 		render_latex(dict, tempfolder)
 		rm(path*".zip", force=true)
 		zip_folder(tempfolder, path*".zip")
@@ -342,12 +347,37 @@ function latex!(
 		
 		cols = ModelSelection.get_selected_variables(Int64(result.bestresult_data[datanames_index[:index]]), expvars_gsr, data.intercept)
 
+		
+		
 		# FIXME What?? modelavg_datanames = ResearchAccelerator.AllSubsetRegression.get_varnames(result.modelavg_datanames)
-
+		
 		d_bestmodel = Dict()
 		d_bestmodel["depvar"] = data.depvar
-		d_bestmodel["bmexpvars"] = []
+		
+		residual_test = []
 
+		if data.results[1].residualtest && !isnothing(data.time)
+			push!(residual_test, :jbtest, :wtest, :bgtest)
+			residual_test = map(Symbol, residual_test)
+			d_bestmodel["residualtest_fortext"] = Dict()
+
+			for test in residual_test
+				d_bestmodel["residualtest_fortext"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+			end
+			
+		elseif result.residualtest && isnothing(data.time)
+			push!(residual_test, :jbtest, :wtest)
+			d_bestmodel["residualtest_fortext"] = Dict()
+
+			for test in residual_test
+				d_bestmodel["residualtest_fortext"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+			end
+		else
+			d_bestmodel["residualtest_fortext"] = false
+		end
+		
+		d_bestmodel["bmexpvars"] = []
+		
 		for var in expvars_gsr
 			intercept = if (data.intercept)
 				1

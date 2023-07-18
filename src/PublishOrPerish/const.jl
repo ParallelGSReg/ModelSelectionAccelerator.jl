@@ -4,5 +4,5 @@ const SOURCE_CONST = "gscholar"
 const METHOD_CONST = "keywords" 
 const OUTFILE_CONST = "./bib_output.csv"
 const OUTBIB_CONST = "./src/Output/decorations/latex/tpl/bib_output"
-const USERNAME_CONST = "default"
-const PASS_CONST = "default"
+const USERNAME_CONST = nothing
+const PASS_CONST = nothing

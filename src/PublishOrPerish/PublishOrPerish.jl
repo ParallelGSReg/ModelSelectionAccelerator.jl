@@ -15,8 +15,8 @@ module PublishOrPerish
 			method::String = METHOD_CONST, 
 			outfile::String = OUTFILE_CONST,
 			outbib::String = OUTBIB_CONST,
-			username::String = USERNAME_CONST,
-			password::String = PASS_CONST
+			username::Union{String, Nothing} = USERNAME_CONST,
+			password::Union{String, Nothing} = PASS_CONST
 		)::Bool
 	    
 	    if !(source in sources) 
