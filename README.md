@@ -6,6 +6,38 @@
 * AI integration for references and literature review. Using user-provided keywords or phrases, ```ResearchAccelerator.jl``` will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/citations statistics. Finally, a machine learning system with modern Large Language Models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
 
 ## Function Documentation: 
+
+```julia
+function researchaccelerator(
+	# Latex Usage
+	data::ModelSelection.ModelSelectionData;
+	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,
+	
+	# PublishOrPerish Usage
+	query::Union{Vector{String}, Nothing} = QUERT_CONST,
+	max::Int = MAX_CONST, 
+	source::String = SOURCE_CONST, 
+	method::String = METHOD_CONST, 
+	outfile::String = OUTFILE_CONST,
+	outbib::String = OUTBIB_CONST,
+	username::Union{String, Nothing} = USERNAME_CONST,
+	password::Union{String, Nothing} = PASS_CONST,
+
+	# BiblioAnalysis Usage
+	data_csv::Union{String, Nothing} = outfile,
+	query_ ::Union{Vector{String}, Nothing} = query,
+	out_folder::String = OUTFILE_CONST, 
+	n_neighbors::Int = N_NEIGHBORS_CONST, 
+	n_components::Int = N_COMPONENTS_CONST, 
+	min_cluster_size::Int = MIN_CLUSTER_SIZE_CONST,
+	min_samples::Int = MIN_SAMPLES_CONST,
+	diversity::Union{String, Nothing} = DIVERSITY_CONST,
+	language::Union{String, Nothing} = LANGUAGE_CONST,
+	export_html::Bool = EXPORT_HTML_CONST
+)
+
+```
+
 ``researchaccelerator()`` function is a versatile tool designed to assist researchers in various stages of their research process, particularly in the areas of model selection, literature analysis, and publication analysis. It integrates with different modules like ```ModelSelection.jl```, ```PublishOrPerish.jl```, and ```BiblioAnalysis.jl```, allowing users to perform a wide range of research-related tasks efficiently.
 
 Parameters:
