@@ -1,12 +1,12 @@
 # ResearchAccelerator.jl
-ResearchAccelerator.jl is a Julia Package that provides broad-based support to accelerate applied research using feature selection / dimensionality reduction techniques. This package that includes:
+```ResearchAccelerator.jl``` is a Julia Package that provides broad-based support to accelerate applied research using feature selection/dimensionality reduction techniques. This package that includes:
 
-* Extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using \verb|ModelSelection.jl| results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
+* Extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using ```ModelSelection.jl``` results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
   
-* AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ResearchAccelerator.jl| will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/citations statistics. Finally, a machine learning system with modern Large Language Models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
+* AI integration for references and literature review. Using user-provided keywords or phrases, ```ResearchAccelerator.jl``` will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/citations statistics. Finally, a machine learning system with modern Large Language Models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
 
 ## Function Documentation: 
-``researchaccelerator()`` function is a versatile tool designed to assist researchers in various stages of their research process, particularly in the areas of model selection, literature analysis, and publication analysis. It integrates with different modules like ModelSelection, PublishOrPerish, and BiblioAnalysis, allowing users to perform a wide range of research-related tasks efficiently.
+``researchaccelerator()`` function is a versatile tool designed to assist researchers in various stages of their research process, particularly in the areas of model selection, literature analysis, and publication analysis. It integrates with different modules like ```ModelSelection.jl```, ```PublishOrPerish.jl```, and ```BiblioAnalysis.jl```, allowing users to perform a wide range of research-related tasks efficiently.
 
 Parameters:
 
