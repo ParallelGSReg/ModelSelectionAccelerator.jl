@@ -9,7 +9,7 @@ module PublishOrPerish
 	methods = ["author", "affiliation", "citedid", "field", "issn", "journal", "title", "keywords", "years", "raw"]
 
 	function search(
-			query::Union{String, Vector{String}}, 
+			query::Union{Vector{String}, Nothing} = QUERT_CONST, 
 			max::Int = MAX_CONST, 
 			source::String = SOURCE_CONST, 
 			method::String = METHOD_CONST, 

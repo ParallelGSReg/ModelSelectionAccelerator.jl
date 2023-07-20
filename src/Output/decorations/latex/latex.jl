@@ -22,59 +22,241 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 	
 	criteria_diff = Array{Any}(undef, length(filter(x -> x != :_cons, data.expvars)), 2)
 
-	order = ResearchAccelerator.get_column_index(:order, data.results[1].datanames)
+	if length(data.options[:criteria]) > 1
+		order = ResearchAccelerator.get_column_index(:order, data.results[1].datanames)
+	else
+		order = ResearchAccelerator.get_column_index(data.options[:criteria][1], data.results[1].datanames)
+	end
+
+	if data.options[:estimator] == :ols
+		F = ResearchAccelerator.get_column_index(:F, data.results[1].datanames)
+	else
+		F = ResearchAccelerator.get_column_index(:LR, data.results[1].datanames)
+	end 
+
+	if data.options[:residualtest]
+		wtest = ResearchAccelerator.get_column_index(:wtest, data.results[1].datanames)
+		jbtest = ResearchAccelerator.get_column_index(:jbtest, data.results[1].datanames)
+	end
+	
+	if !isnothing(data.options[:time]) && data.options[:residualtest]
+		bgtest = ResearchAccelerator.get_column_index(:bgtest, data.results[1].datanames)
+	end
+
+
 	for (i, expvar) in enumerate(expvars2)
 
 		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
 		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
-		bstdcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_bstd"), data.results[1].datanames)
+		
 		x = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bcol]
-				
-		if tcol !== nothing
-			y = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, tcol]), tcol]
-			biden = kde((x, y), npoints = (100, 100))
-			contour(biden.x, biden.y, biden.density; xlabel = "Coef. $expvar", ylabel = "t-test $expvar")
-			savefig(joinpath(destfolder, "contour_$(expvar)_b_t.png"))
-		end
 
-		if bstdcol !== nothing
-			bstd = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bstdcol]), bstdcol]
-			bstd_density = kde(bstd)
-			p1 = plot(range(min(bstd...), stop = max(bstd...), length = 150), z -> pdf(bstd_density, z), xlabel = "Residual Test of $expvar", ylabel = "Kernel Distribution") 
-			savefig(joinpath(destfolder, "KernelDensity_$(expvar)_b_residuals.png"))
-		end
-	
+		# Criteria with and without
 		criteria_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), order] # criteria including expvar
 		criteria_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), order] # criteria excluding expvar
-		
+
 		# Filter by NaN and Inf obs
 		criteria_with = filter(x -> !isnan(x), filter(x -> !isinf(x), criteria_with))	
 		criteria_without = filter(x -> !isnan(x), filter(x -> !isinf(x), criteria_without))
 
+		# Join Significance with and without
+		F_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), F] # F including expvar
+		F_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), F] # F excluding expvar
+
+		# Filter by NaN and Inf obs
+		F_with = filter(x -> !isnan(x), filter(x -> !isinf(x), F_with))	
+		F_without = filter(x -> !isnan(x), filter(x -> !isinf(x), F_without))
+
+		if data.options[:residualtest]
+			# heteroskedasticity  with and without
+			wtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), wtest] # wtest including expvar
+			wtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), wtest] # wtest excluding expvar
+
+			# Filter by NaN and Inf obs
+			wtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), wtest_with))	
+			wtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), wtest_without))
+
+			# Normality with and without
+			jbtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), jbtest] # jbtest including expvar
+			jbtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), jbtest] # jbtest excluding expvar
+
+			# Filter by NaN and Inf obs
+			jbtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), jbtest_with))	
+			jbtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), jbtest_without))
+		end
+		
+		if !isnothing(data.options[:time]) && data.options[:residualtest]
+		# Autocorrelation with and without
+		bgtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest including expvar
+		bgtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest excluding expvar
+
+		# Filter by NaN and Inf obs
+		bgtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_with))	
+		bgtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_without))
+		end
+
+		coef_plot = nothing
+		t_plot = nothing
+		F_plot = nothing
+		wtest_plot = nothing
+		jbtest_plot = nothing
+		bgtest_plot = nothing
+
 		# This function excludes fixed variables, because criteria_without is an empty vector due to is fixed
 		if (criteria_with != []) & (criteria_without != [])
 
-			p1 = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues)
-			p1 = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange)
+			coef_plot = violin(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.1, stroke(0)), alpha = 0.50, color = :blues,  ylabel = "Wgt. Avg. of Selected Criteria", title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6)
+			coef_plot = boxplot!(["Including $(expvar)" "Excluding $(expvar)"], [criteria_with, criteria_without], leg = false, marker = (0.3, stroke(2)), alpha = 0.6, color = :orange,  ylabel = "Wgt. Avg. of Selected Criteria", title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6)
 			
-			if length(data.results[1].criteria) > 1			
-				plot(p1, ylabel = "Weighted Average of Selected Criteria") 
-				savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
-			else
-				if data.options[:estimator] == :ols
-					plot(p1, ylabel = "Selected Criteria:"*" "*String(:r2adj)) 
+			if data.options[:estimator] == :ols
+				if length(data.results[1].criteria) > 1			
+					plot(coef_plot, ylabel = "Wgt. Avg. of Selected Criteria", title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6) 
 					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
 				else
-					plot(p1, ylabel = "Selected Criteria:"*" "*String(:pseudo_r2adj)) 
+					plot(coef_plot, ylabel = "Selected Criteria:"*" "*String(:r2adj), title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6)
 					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
 				end
+			elseif data.options[:estimator] != :ols
+				if length(data.results[1].criteria) > 1			
+					plot(coef_plot, ylabel = "Wgt. Avg. of Selected Criteria", title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6) 
+					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
+				else
+					plot(coef_plot, ylabel = "Selected Criteria:"*" "*String(:pseudo_r2adj), title="Selection criteria gains for including $(expvar) (Box-Violin view)", titlefontsize=6)
+					savefig(joinpath(destfolder, "BoxViolinDot_$(expvar).png"))
+				end
+				
 			end
-
+			
 			criteria_diff[i, 1] = mean(criteria_with) - mean(criteria_without)
-			criteria_diff[i, 2] = "$(expvar)"
+			criteria_diff[i, 2] = "$(expvar)"			
 		end
-	end
 
+
+
+		if (F_with != []) & (F_without != [])
+			F_with_density = kde(F_with)
+			F_without_density = kde(F_without)
+			F_plot = plot(range(min(F_with...), stop = max(F_with...), length = 150), z -> pdf(F_with_density, z), xlabel = "Test of Join Significance with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Join Significance gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+			F_plot = plot!(range(min(F_with...), stop = max(F_with...), length = 150), z -> pdf(F_without_density, z), xlabel = "Test of Join Significance with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Join Significance gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+			savefig(joinpath(destfolder, "JoinSignificance_$(expvar).png"))
+		end
+
+		if data.options[:residualtest]
+			if !iszero(wtest_with) && !iszero(wtest_without)
+				wtest_with_density = kde(wtest_with)
+				wtest_without_density = kde(wtest_without)
+				wtest_plot = plot(range(min(wtest_with...), stop = max(wtest_with...), length = 150), z -> pdf(wtest_with_density, z), xlabel = "White Heteroskedasticity Test with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Heteroskedasticity gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				wtest_plot = plot!(range(min(wtest_with...), stop = max(wtest_with...), length = 150), z -> pdf(wtest_without_density, z), xlabel = "White Heteroskedasticity Test with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Heteroskedasticity gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				savefig(joinpath(destfolder, "Heteroskedasticity_$(expvar).png"))
+			end 
+
+			if !iszero(jbtest_with) && !iszero(jbtest_without)
+				jbtest_with_density = kde(jbtest_with)
+				jbtest_without_density = kde(jbtest_without)
+				jbtest_plot = plot(range(min(jbtest_with...), stop = max(jbtest_with...), length = 150), z -> pdf(jbtest_with_density, z), xlabel = "Normality Test (Jarque-Bera) with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Normality gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				jbtest_plot = plot!(range(min(jbtest_with...), stop = max(jbtest_with...), length = 150), z -> pdf(jbtest_without_density, z), xlabel = "Normality Test (Jarque-Bera) with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Normality gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				savefig(joinpath(destfolder, "Normality_$(expvar).png"))
+			end	
+		end
+
+		if !isnothing(data.options[:time]) && data.options[:residualtest]
+			if !iszero(bgtest_with) && !iszero(bgtest_without)
+				bgtest_with_density = kde(bgtest_with)
+				bgtest_without_density = kde(bgtest_without)
+				bgtest_plot = plot(range(min(bgtest_with...), stop = max(bgtest_with...), length = 150), z -> pdf(bgtest_with_density, z), xlabel = "Autocorrelation Test (Breusch-Godfrey) with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				bgtest_plot = plot!(range(min(bgtest_with...), stop = max(bgtest_with...), length = 150), z -> pdf(bgtest_without_density, z), xlabel = "Autocorrelation Test (Breusch-Godfrey) with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				savefig(joinpath(destfolder, "Autocorrelation_$(expvar).png"))
+			end	
+		end
+
+		if tcol !== nothing
+			y = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, tcol]), tcol]
+			biden = kde((x, y), npoints = (100, 100))
+			t_plot = contour(biden.x, biden.y, biden.density; xlabel = "Coef. Dist. of $expvar", ylabel = "T-test Dist. of $expvar", tickfontsize = 5, title="Bivariate Kernel density of $(expvar) (Contour view)", titlefontsize=6)
+			savefig(joinpath(destfolder, "contour_$(expvar)_b_t.png"))
+		end
+
+		# Combine the plots into a single figure (Include white test)
+
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = true
+		if !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && !isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = true
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, jbtest_plot, bgtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, bgtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = false
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = false
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, wtest, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = true, residualtest = false , time = false
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, t_plot, F_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+			
+		# t-test = false, residualtest = false , time = false
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, layout = (1, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+
+		# For fixed variables (only contour plot)
+		# t-test = true, residualtest = false , time = false
+		elseif isnothing(coef_plot) && !isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(t_plot, tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		end
+
+	end
+	
 	criteria_diff_sort = sortslices(criteria_diff, dims = 1)
 	labels = convert(Array{String}, criteria_diff_sort[:, 2])
 	bar(criteria_diff_sort[:, 1], orientation=:h, yticks=(1:size(criteria_diff_sort,1),labels), legend = false, color = :blues, xlabel = "Average impact of each variable on the Selected Criteria")
@@ -91,9 +273,9 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 		"multiple_positive_variables" => numofpositivegainsvariables > 1,
 		"multiple_negative_variables" => numofnegativegainsvariables > 1,
 		"no_negative_variables" => numofnegativegainsvariables == 0,
-		"bestvar" => criteria_diff_sort[end, 2],
+		"bestvar" => replace(string(criteria_diff_sort[end, 2]), "_" => "\\_"),
 		"bestvar_gainsinperc" => @sprintf("%.3f", criteria_diff_sort[end, 1]),
-		"worstvar" => criteria_diff_sort[1, 2],
+		"worstvar" => replace(string(criteria_diff_sort[1, 2]), "_" => "\\_"),
 		"worstvar_gainsinperc" => @sprintf("%.3f", criteria_diff_sort[1, 1]),
 		)
 		
@@ -149,6 +331,7 @@ function latex(
 	originaldata::ModelSelectionData;
 	path::Union{String, Nothing} = DEFAULT_LATEX_DEST_FOLDER,
 	bib_gen::Bool = false,
+	analyzer_gen::Bool = false,
 	user_input::Dict
 )
 	tempfolder = tempname()
@@ -174,6 +357,10 @@ function latex(
 
 		if bib_gen
 			dict["bib_gen"] = true
+		end
+
+		if analyzer_gen
+			dict["analyzer_gen"] = true
 		end
 
 		if !isnothing(user_input)
@@ -488,14 +675,14 @@ function latex!(
 				filter(x -> x["name"] != :_cons, expvars_dict)
 		dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["bestmodel"] = d_bestmodel
 
-		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] != nothing
+		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] !== nothing
 			dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"] =
 				string("[:", join(dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["criteria"], ", :"), "]")
 		end
 
 		if dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtest"] != false
 			if "time" in keys(dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]) &&
-			   dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["time"] != nothing
+			   dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["time"] !== nothing
 				dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex2"] = true
 			else
 				dict[string(ModelSelection.AllSubsetRegression.ALLSUBSETREGRESSION_EXTRAKEY)]["residualtestfortex"] = true

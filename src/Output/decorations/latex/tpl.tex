@@ -101,8 +101,16 @@ The following sintax was use based on \verb|ResearchAccelerator.jl| package
   method = {{{.}}}{{/method}}{{#outfile}}, 
   outfile ={{{.}}}{{/outfile}}{{#username}},
   username = {{{.}}}{{/username}}{{#password}},
-  password = {{{.}}}{{/password}} 
-  {{/user_input}})
+  password = {{{.}}}{{/password}}{{#n_neighbors}},
+  n_neighbors = {{{.}}}{{/n_neighbors}}{{#n_components}}, 
+	n_components = {{{.}}}{{/n_components}}{{#min_cluster_size}}, 
+	min_cluster_size = {{{.}}}{{/min_cluster_size}}{{#min_samples}},
+	min_samples = {{{.}}}{{/min_samples}}{{#diversity}},
+	diversity = {{{.}}}{{/diversity}}{{#language}},
+	language = {{{.}}}{{/language}}{{#export_html}},
+	export_html = {{{.}}}{{/export_html}}
+ 
+{{/user_input}})
 \end{lstlisting}
 
 
@@ -453,45 +461,23 @@ LASSO regression is shown in the following table:
 \clearpage
 \subsection{Coefficient, t-test and selection criteria gains distributions}
 
-In the following pages, coefficient, t-test and selection criteria distributions are presented. For each covariate, four figures are included: two bivariate density plots (a contour plot and a wireframe plot, for coefficients and t-tests distributions) and two selection criteria contribution plots (a Kernel density plot and a combined Box-Violin plot). The last two plots are used to see the combined\_criteria\_index variation explained by the inclusion of each covariate in the models. 
-Finally, we include a unique figure where covariate relative performance is compared using the average impact of each explanatory variable on the combined\_criteria\_index.
-
-\clearpage
+{{#input}}
+In the following pages, coefficient{{#ttest}}, t-test {{/ttest}}and selection criteria distributions are presented.{{#residualtest}} In addition, residual test distributions of each covariate are depicted{{/residualtest}}. For each covariate,{{^ttest}}{{^residualtest}} a combined Box-Violin plot for coefficients distributions, according to the selected critaria is shown.{{/residualtest}}{{/ttest}}{{#ttest}}{{#residualtest}} these figures are included: a combined Box-Violin plot for coefficients distributions (according to the selected critaria), a contour plot for coefficients and t-tests distributions, and a Kernel density plot for the residual test of each coefficient.{{/residualtest}}{{/ttest}}{{#ttest}}{{^residualtest}} these figures are included: a combined Box-Violin plot for coefficients distributions (according to the selected critaria) and a contour plot for coefficients and t-tests distributions{{/residualtest}}{{/ttest}} Finally, we include a unique figure where covariate relative performance is compared using the average impact of each explanatory variable on the combined criteria index ({{#criteria}}{{{.}}}{{/criteria}}).
+{{/input}}
 
 {{#expvarswithoutcons}}
 \begin{center}
     \large{\textbf{Coefficient, t-test and selection criteria gains distributions for {{{name2}}} }}
 \end{center}
 
-\vspace{-5mm}
+\vspace{5mm}
 
 \begin{figure}[!ht]
   \centering
-  
-  \begin{minipage}[b]{0.46\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{contour_{{name}}_b_t.png}
-    \caption{Bivariate Kernel density (Contour view)}
-  \end{minipage}
-  \hfill
-
-  \begin{minipage}[b]{0.48\textwidth}
-    \centering    
-    \includegraphics[width=\textwidth]{BoxViolinDot_{{name}}.png}
-    \caption{Selection criteria gains for including {{name}} (Box-Violin view)}    
-  \end{minipage}
-
-  {{#residualtest}}
-  \begin{minipage}[b]{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{KernelDensity_{{name}}_b_residuals.png}
-    \caption{Residual Test Density of {{name}} (Kernel view)}
-  \end{minipage}
-  \hfill
-  {{/residualtest}}
+  \includegraphics[width=1\textwidth]{VarPlots_{{name}}.png}
 \end{figure}
 
-\vspace{1cm}
+\vspace{5mm}
 
 The following table shows main statistics of coefficient and t-test distribution 
 
@@ -500,7 +486,7 @@ The following table shows main statistics of coefficient and t-test distribution
     \caption{Statistics}
     \begin{tabular}{|l|c|c|}
     \hline
-    Variable {{name}} Statistics &  Coefficient Distribution &  T-test Distribution  \\
+    Variable {{{name2}}} Statistics &  Coefficient Distribution &  T-test Distribution  \\
     \hline
     \hline
     Simple average    & {{b.avg}}      & {{t.avg}} \\
@@ -569,10 +555,100 @@ In this figure it is shown that potential covariates included in the general unr
 \end{table}
 {{/crossvalidation}}
 
+{{#analyzer_gen}}
+{{#user_input}}
+
+\section{Bibliography Analysis based on Keywords using the integrated AI}
+
+Considering keywords introduced by the user ({{#query}}{{{.}}}{{/query}}), the integrated function called \verb|PublishOrPerish.jl| returns a list of at least {{#max}}{{{.}}}{{/max}} papers, from {{#source}}{{.}}{{/source}}. After that, the other function named \verb|BiblioAnalysis.jl|, uses the abovementioned input to assist researcher in filtering the bibliography and reducing the paper sample. For this, it's based on Large Language Models (LLM) to minimize a distance measure among documents and the introduced query. For that rutine, the document abstracts are used. The \verb|PublishOrPerish.jl| and \verb|BiblioAnalysis.jl| functions are used as follows:
+
+\begin{lstlisting} 
+  using ResearchAccelerator
+
+  ResearchAccelerator.PublishOrPerish({{#input}}{{#data}}
+    data = {{.}}{{/data}}{{/input}}{{#query}},
+    query = {{{.}}}{{/query}}{{#max}},
+    max = {{{.}}}{{/max}}{{#source}}, 
+    source = {{{.}}}{{/source}}{{#method}}, 
+    method = {{{.}}}{{/method}}{{#outfile}}, 
+    outfile ={{{.}}}{{/outfile}}{{#username}},
+    username = {{{.}}}{{/username}}{{#password}},
+    password = {{{.}}}{{/password}}
+    )
+
+  ResearchAccelerator.BiblioAnalysis({{#n_neighbors}},
+    n_neighbors = {{{.}}}{{/n_neighbors}}{{#n_components}}, 
+    n_components = {{{.}}}{{/n_components}}{{#min_cluster_size}}, 
+    min_cluster_size = {{{.}}}{{/min_cluster_size}}{{#min_samples}},
+    min_samples = {{{.}}}{{/min_samples}}{{#diversity}},
+    diversity = {{{.}}}{{/diversity}}{{#language}},
+    language = {{{.}}}{{/language}}{{#export_html}},
+    export_html = {{{.}}}{{/export_html}}
+    )
+
+\end{lstlisting}
+
+\subsection{Topic Analysis}
+The BERT model is used through the \verb|BERTopic| phyton package with the aim of obtain relevant topics from the documents. Considering user's query and the rest of parameters introduced, the table below summarizes the infered topics and their distance to the query.
+
+\begin{table}
+  \centering
+  \input{topics_distance_table.tex}  
+\end{table}
+
+First of all, a figure describes the evolution of the number of obtained documents of each topic for each year, inferring how relevant were the papers through recent years. In the following figure, a two-dimensional projection of the topics embedding and the query (in red) is shown. Then, next figure allows to understand distances among topics and their relative position to the query. Thereupon, the cosine similarity matrix shown explains the similarity among inferred topics. Finally, document clusters and their assignment into topics is shown in the next figure.
+
+\begin{figure}[ht]
+  \centering
+  \caption{Evolution of the number of obtained documents of each topic for each year}
+  \includegraphics[scale = 0.4]{topics_over_time.png}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \caption{Two-dimentional projection of the topics embbeding and the query (in red)}
+  \includegraphics[scale = 0.8]{topics_and_query.png}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \caption{cosine similarity matrix among topics}
+  \includegraphics[scale = 0.4]{similarity_matrix.png}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \caption{Clusters and Topics}
+  \includegraphics[scale = 0.55, angle=90]{documents.png}
+\end{figure}
+
+\clearpage
+
+\subsection{Abstracs Analysis}
+In this subsection document abstracts are analyzed. As the number of documents can be huge, only the first 10\% are shown below. They are ordered by their distance to the introduced query.
+
+\begin{table}[ht]
+  \centering
+  \input{abstracts_distance_table.tex} 
+\end{table}
+
+\clearpage
+
+In addition the query and documents' 2D projection is shown to gather insight on the documents' location relative to the query. This figure can be used to adjust the query if documents found are to far or to near from it.
+
+\begin{figure}[ht]
+  \centering
+  \caption{Query and Documents' 2D projection}
+  \includegraphics[scale = 1]{documents.png}
+\end{figure}
+
+{{/user_input}}
+{{/analyzer_gen}}
+
 \nocite{*} % Include all entries from the .bib file
 
 {{#bib_gen}}
-\renewcommand{\refname}{References results obtained from keywords}
+\renewcommand{\refname}{Full References results obtained from the integrated AI}
 \addcontentsline{toc}{section}{References Integrated AI} 
 \bibliographystyle{unsrt}  
 \bibliography{bib_output} 
