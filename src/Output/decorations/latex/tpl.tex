@@ -245,7 +245,16 @@ Additional options applied in this report includes:
   {{/time}}
   {{#time}}
   {{#residualtest}}
+  {{#allsubsetregression}}{{#bestmodel}}{{#residualtest_fortext}}{{#OLS}}
   \item The residualtest=true option enables white heteroskedasticity, Jarque-Bera normality test and the Breusch-Godfrey test for autocorrelation to be implemented for each model.
+  {{/OLS}}{{/residualtest_fortext}}{{/bestmodel}}{{/allsubsetregression}}
+  {{/residualtest}}
+  {{/time}}
+  {{#time}}
+  {{#residualtest}}
+  {{#allsubsetregression}}{{#bestmodel}}{{#residualtest_fortext}}{{#LOGIT}}
+  \item The residualtest=true option enables white heteroskedasticity, Jarque-Bera normality test and the Wald Wolfowitz test for autocorrelation to be implemented for each model.
+  {{/LOGIT}}{{/residualtest_fortext}}{{/bestmodel}}{{/allsubsetregression}}
   {{/residualtest}}
   {{/time}}
   {{#orderresults}}  
@@ -445,10 +454,14 @@ LASSO regression is shown in the following table:
     {{/bmexpvars}}\hline
 
     Observations &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{ nobs }} } \\
-    Criteria     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{ criteria }} } \\ {{#residualtest_fortext}}
+    Criteria     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{ criteria }} } \\ {{#residualtest_fortext}}{{#OLS}}
     Heteroskedasticity (White Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#wtest}}{{.}}{{/wtest}} } \\
     Normality (Jarque-Bera Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#jbtest}}{{.}}{{/jbtest}} } \\
-    Autocorrelation (Breusch-Godfrey Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#bgtest}}{{.}}{{/bgtest}} } {{/residualtest_fortext}}\\
+    Autocorrelation (Breusch-Godfrey Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#bgtest}}{{.}}{{/bgtest}} } {{/OLS}}{{/residualtest_fortext}}\\
+    {{#residualtest_fortext}}{{#LOGIT}}
+    Heteroskedasticity (White Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#wtest}}{{.}}{{/wtest}} } \\
+    Normality (Jarque-Bera Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#jbtest}}{{.}}{{/jbtest}} } \\
+    Autocorrelation (Wald Wolfowitz Test)     &   \multicolumn{ {{^modelavg}}1{{/modelavg}} {{#modelavg}}2{{/modelavg}} }{c}{ {{#bgtest}}{{.}}{{/bgtest}} } {{/LOGIT}}{{/residualtest_fortext}}\\
     \hline
     \hline
     \multicolumn{ {{^modelavg}}2{{/modelavg}} {{#modelavg}}3{{/modelavg}} }{c}{Standard errors in parentheses} \\

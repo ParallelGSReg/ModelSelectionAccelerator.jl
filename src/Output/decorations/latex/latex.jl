@@ -39,8 +39,10 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 		jbtest = ResearchAccelerator.get_column_index(:jbtest, data.results[1].datanames)
 	end
 	
-	if !isnothing(data.options[:time]) && data.options[:residualtest]
+	if !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] == :ols
 		bgtest = ResearchAccelerator.get_column_index(:bgtest, data.results[1].datanames)
+	elseif !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] != :ols
+		wwtest = ResearchAccelerator.get_column_index(:wwtest, data.results[1].datanames)
 	end
 
 
@@ -85,14 +87,23 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 			jbtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), jbtest_without))
 		end
 		
-		if !isnothing(data.options[:time]) && data.options[:residualtest]
+		if !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] == :ols
 		# Autocorrelation with and without
-		bgtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest including expvar
-		bgtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest excluding expvar
+			bgtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest including expvar
+			bgtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), bgtest] # bgtest excluding expvar
 
-		# Filter by NaN and Inf obs
-		bgtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_with))	
-		bgtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_without))
+			# Filter by NaN and Inf obs
+			bgtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_with))	
+			bgtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), bgtest_without))
+
+		elseif !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] != :ols
+			wwtest_with = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), wwtest] # bgtest including expvar
+			wwtest_without = data.results[1].data[findall(x -> isnan(x), data.results[1].data[:, bcol]), wwtest] # bgtest excluding expvar
+
+			# Filter by NaN and Inf obs
+			wwtest_with = filter(x -> !isnan(x), filter(x -> !isinf(x), wwtest_with))	
+			wwtest_without = filter(x -> !isnan(x), filter(x -> !isinf(x), wwtest_without))
+
 		end
 
 		coef_plot = nothing
@@ -101,6 +112,7 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 		wtest_plot = nothing
 		jbtest_plot = nothing
 		bgtest_plot = nothing
+		wwtest_plot = nothing
 
 		# This function excludes fixed variables, because criteria_without is an empty vector due to is fixed
 		if (criteria_with != []) & (criteria_without != [])
@@ -159,12 +171,20 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 			end	
 		end
 
-		if !isnothing(data.options[:time]) && data.options[:residualtest]
+		if !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] == :ols
 			if !iszero(bgtest_with) && !iszero(bgtest_without)
 				bgtest_with_density = kde(bgtest_with)
 				bgtest_without_density = kde(bgtest_without)
 				bgtest_plot = plot(range(min(bgtest_with...), stop = max(bgtest_with...), length = 150), z -> pdf(bgtest_with_density, z), xlabel = "Autocorrelation Test (Breusch-Godfrey) with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
 				bgtest_plot = plot!(range(min(bgtest_with...), stop = max(bgtest_with...), length = 150), z -> pdf(bgtest_without_density, z), xlabel = "Autocorrelation Test (Breusch-Godfrey) with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				savefig(joinpath(destfolder, "Autocorrelation_$(expvar).png"))
+			end	
+		elseif !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] != :ols
+			if !iszero(wwtest_with) && !iszero(wwtest_without)
+				wwtest_with_density = kde(wwtest_with)
+				wwtest_without_density = kde(wwtest_without)
+				wwtest_plot = plot(range(min(wwtest_with...), stop = max(wwtest_with...), length = 150), z -> pdf(wwtest_with_density, z), xlabel = "Autocorrelation Test (Wald Wolfowitz) with and without $expvar", ylabel = "Kernel Dist.", label = "with", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
+				wwtest_plot = plot!(range(min(wwtest_with...), stop = max(wwtest_with...), length = 150), z -> pdf(wwtest_without_density, z), xlabel = "Autocorrelation Test (Wald Wolfowitz) with and without $expvar", ylabel = "Kernel Dist.", label = "without", legendfontsize = 5, title="Autocorrelation gains for including $(expvar) (Kernel view)", titlefontsize=6) 
 				savefig(joinpath(destfolder, "Autocorrelation_$(expvar).png"))
 			end	
 		end
@@ -178,73 +198,144 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 
 		# Combine the plots into a single figure (Include white test)
 
-		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = true
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = true (OLS)
 		if !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && !isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = true (LOGIT)
+		elseif  !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && !isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, wwtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+
+		
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, jbtest_plot, wwtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, wtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = true
+			# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, wwtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = true (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, bgtest_plot, layout = (3, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+			# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = true (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, wwtest_plot, layout = (3, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 
-		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, jbtest_plot, bgtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = true (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && !isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, jbtest_plot, wwtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, wtest_plot, bgtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = true (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && !isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, wwtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 
-		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = false
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 				
-		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false
+		# t-test = true, residualtest = true (wtest & jbtest_plot > 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) !isnothing(jbtest_plot) && isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, jbtest_plot, layout = (3, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 				
-		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false
+		# t-test = true, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)
 			plot(coef_plot, t_plot, F_plot, wtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 				
-		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = false
+		# t-test = true, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(wwtest_plot)
+			plot(coef_plot, t_plot, F_plot, wtest_plot, layout = (2, 2), tickfontsize = 5, labelfontsize =5)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false
+		# t-test = false, residualtest = true (wtest & jbtest_plot > 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, wtest_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 				
-		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false
+		# t-test = false, residualtest = true (wtest = 0 & jbtest_plot > 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && isnothing(wtest_plot) && !isnothing(jbtest_plot) && isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, jbtest_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+				
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
 			plot(coef_plot, F_plot, wtest, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 		
-		# t-test = true, residualtest = false , time = false
+		# t-test = false, residualtest = true (wtest > 0 & jbtest_plot = 0), time = false (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && !isnothing(F_plot) && !isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(wwtest_plot)		
+			plot(coef_plot, F_plot, wtest, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = true, residualtest = false , time = false (OLS)
 		elseif !isnothing(coef_plot) && !isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
 			plot(coef_plot, t_plot, F_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+			# t-test = true, residualtest = false , time = false (LOGIT)
+		elseif !isnothing(coef_plot) && !isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(wwtest_plot)		
+			plot(coef_plot, t_plot, F_plot, layout = (2, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 			
-		# t-test = false, residualtest = false , time = false
+		# t-test = false, residualtest = false , time = false (OLS)
 		elseif !isnothing(coef_plot) && isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(bgtest_plot)		
+			plot(coef_plot, F_plot, layout = (1, 2), tickfontsize = 8, labelfontsize =8)
+			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
+		
+		# t-test = false, residualtest = false , time = false (LOGIT)
+		elseif !isnothing(coef_plot) && isnothing(t_plot) && isnothing(F_plot) && isnothing(wtest_plot) && isnothing(jbtest_plot) && isnothing(wwtest_plot)		
 			plot(coef_plot, F_plot, layout = (1, 2), tickfontsize = 8, labelfontsize =8)
 			savefig(joinpath(destfolder, "VarPlots_$(expvar).png"))
 
@@ -543,26 +634,51 @@ function latex!(
 		
 		residual_test = []
 
-		if data.results[1].residualtest && !isnothing(data.time)
-			push!(residual_test, :jbtest, :wtest, :bgtest)
-			residual_test = map(Symbol, residual_test)
-			d_bestmodel["residualtest_fortext"] = Dict()
+		if data.options[:estimator] == :ols
+			if data.results[1].residualtest && !isnothing(data.time)
+				push!(residual_test,:F, :jbtest, :wtest, :bgtest)
+				residual_test = map(Symbol, residual_test)
+				d_bestmodel["residualtest_fortext"] = Dict()
+				d_bestmodel["residualtest_fortext"]["OLS"] = Dict()
 
-			for test in residual_test
-				d_bestmodel["residualtest_fortext"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
-			end
-			
-		elseif result.residualtest && isnothing(data.time)
-			push!(residual_test, :jbtest, :wtest)
-			d_bestmodel["residualtest_fortext"] = Dict()
+				for test in residual_test
+					d_bestmodel["residualtest_fortext"]["OLS"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+				end
+				
+			elseif result.residualtest && isnothing(data.time)
+				push!(residual_test, :jbtest, :wtest)
+				d_bestmodel["residualtest_fortext"] = Dict()
+				d_bestmodel["residualtest_fortext"]["OLS"] = Dict()
 
-			for test in residual_test
-				d_bestmodel["residualtest_fortext"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+				for test in residual_test
+					d_bestmodel["residualtest_fortext"]["OLS"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+				end
+			else
+				d_bestmodel["residualtest_fortext"] = false
 			end
 		else
-			d_bestmodel["residualtest_fortext"] = false
-		end
-		
+			if data.results[1].residualtest && !isnothing(data.time)
+				push!(residual_test,:LR, :jbtest, :wtest, :wwtest)
+				residual_test = map(Symbol, residual_test)
+				d_bestmodel["residualtest_fortext"] = Dict()
+				d_bestmodel["residualtest_fortext"]["LOGIT"] = Dict()
+
+				for test in residual_test
+					d_bestmodel["residualtest_fortext"]["LOGIT"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+				end
+				
+			elseif result.residualtest && isnothing(data.time)
+				push!(residual_test, :jbtest, :wtest)
+				d_bestmodel["residualtest_fortext"] = Dict()
+				d_bestmodel["residualtest_fortext"]["LOGIT"] = Dict()
+
+				for test in residual_test
+					d_bestmodel["residualtest_fortext"]["LOGIT"][string(test)] = @sprintf("%.3f", data.results[1].bestresult_data[datanames_index[test]])
+				end
+			else
+				d_bestmodel["residualtest_fortext"] = false
+			end
+		end	
 		d_bestmodel["bmexpvars"] = []
 		
 		for var in expvars_gsr
