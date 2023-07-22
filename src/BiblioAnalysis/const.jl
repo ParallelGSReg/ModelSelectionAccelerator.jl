@@ -6,5 +6,5 @@ const N_COMPONENTS_CONST = 5
 const MIN_CLUSTER_SIZE_CONST = 3
 const MIN_SAMPLES_CONST = 5
 const DIVERSITY_CONST = nothing
-const LANGUAGE_CONST = nothing
+const LANGUAGE_CONST = "Enghlish"
 const EXPORT_HTML_CONST = false 

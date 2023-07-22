@@ -5,8 +5,8 @@ module BiblioAnalysis
 
 	function analyzer(
 			data_csv::Union{String, Nothing} = DATA_CONST,
-            query::Union{Vector{String}, Nothing} = QUERT_CONST_, 
-			out_folder::String = OUT_FOLDER_CONST, 
+            query::Union{Vector{String}, String, Nothing} = QUERT_CONST_, 
+			out_folder::String = OUT_FOLDER_CONST; 
 			n_neighbors::Int = N_NEIGHBORS_CONST, 
 			n_components::Int = N_COMPONENTS_CONST, 
 			min_cluster_size::Int = MIN_CLUSTER_SIZE_CONST,
@@ -16,8 +16,10 @@ module BiblioAnalysis
             export_html::Bool = EXPORT_HTML_CONST
 		)::Bool
 	    
-		cmd_salida = `./src/BiblioAnalysis/bin/biblianalysis --data_csv=$data_csv $method=\"$query\" --out_folder=$out_folder --n_neighbors=$n_neighbors --n_components=$n_components --min_cluster_size=$min_cluster_size --min_samples=$min_samples --diversity=$diversity --language=$language --export_html=$export_html`
-	    
+		
+		cmd_salida = `./src/BiblioAnalysis/bin/biblioanalysis --data_csv=\"$data_csv\" --query=\"$query\" --out_folder=\"$out_folder\" --n_neighbors=$n_neighbors --n_components=$n_components --min_cluster_size=$min_cluster_size --min_samples=$min_samples --language=$language --export_html=$export_html`
+	    #--diversity=$diversity
+
         try
 	    	output = read(run(cmd_salida), String)
 	    catch y
