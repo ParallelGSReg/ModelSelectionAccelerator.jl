@@ -1,6 +1,6 @@
 # ResearchAccelerator.jl
 
-[![][documentation-main-img]][documentation-main-url] [![][build-main-img]][build-main-url] [![][test-main-img]][test-main-url] [![][codecov-img]][codecov-url]
+[![][documentation-main-img]][documentation-main-url] [![][build-main-img]][build-main-url]
 
 ResearchAccelerator.jl is a Julia Package that provides broad-based support to accelerate applied research using feature selection/dimensionality reduction techniques.
 
