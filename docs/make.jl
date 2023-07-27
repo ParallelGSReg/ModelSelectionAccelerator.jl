@@ -12,7 +12,7 @@ end
 
 makedocs(
     format = Documenter.HTML(
-        prettyurls = false,
+        prettyurls = true,
         assets = ["assets/favicon.ico"],
     ),
     source = "src",
