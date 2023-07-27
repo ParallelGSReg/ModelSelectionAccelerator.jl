@@ -1,6 +1,6 @@
 module PublishOrPerish
 
-	using ..ModelSelectionReport
+	using ..ModelSelectionAccelerator
 	include("const.jl")
 
 	sources = ["crossref", "gsauthor", "gscholar", "gsciting", "gsprofile", 

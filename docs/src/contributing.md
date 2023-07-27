@@ -1,6 +1,6 @@
 # Contributing
 
 ```@eval
-using Markdown, ModelSelectionReport
-Markdown.parse_file(joinpath(pkgdir(ModelSelectionReport), "CONTRIBUTING.md"))
+using Markdown, ModelSelectionAccelerator
+Markdown.parse_file(joinpath(pkgdir(ModelSelectionAccelerator), "CONTRIBUTING.md"))
 ```

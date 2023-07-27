@@ -1,5 +1,5 @@
 using Documenter, DocumenterTools
-using ModelSelectionReport
+using ModelSelectionAccelerator
 
 # The DOCSARGS environment variable can be used to pass additional arguments to make.jl.
 # This is useful on CI, if you need to change the behavior of the build slightly but you
@@ -18,8 +18,8 @@ makedocs(
     source = "src",
     build   = "build",
     clean   = true,
-    modules = [ModelSelectionReport],
-    sitename = "ModelSelectionReport.jl",
+    modules = [ModelSelectionAccelerator],
+    sitename = "ModelSelectionAccelerator.jl",
     pages = [
         "Home" => "index.md",
         "Getting Started" => "start.md",
@@ -32,6 +32,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/ParallelGSReg/ModelSelectionReport.jl.git",
+    repo = "github.com/ParallelGSReg/ModelSelectionAccelerator.jl.git",
     versions = nothing,
 )

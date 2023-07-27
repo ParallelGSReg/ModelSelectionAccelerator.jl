@@ -1,6 +1,6 @@
 module BiblioAnalysis
 
-	using ..ModelSelectionReport
+	using ..ModelSelectionAccelerator
 	include("const.jl")
 
 	function analyzer(

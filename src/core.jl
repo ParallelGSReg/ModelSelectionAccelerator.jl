@@ -1,4 +1,4 @@
-function ModelSelectionReport(
+function ModelSelectionAccelerator(
 	# Latex Usage
 	data::ModelSelection.ModelSelectionData;
 	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,

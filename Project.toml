@@ -1,4 +1,4 @@
-name = "ModelSelectionReport"
+name = "ModelSelectionAccelerator"
 uuid = "60517a3e-5d9d-4b2e-b5ce-bdbd66b72a48"
 authors = ["Demian Panigo <panigo@gmail.com>", "Adán Mauri Ungaro <adan.mauri@gmail.com>", "Nicolás Monzón <nicomzn4@gmail.com>", "Valentin Mari <valentinmari@hotmail.com>"]
 version = "1.0.0"
