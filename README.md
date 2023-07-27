@@ -1,12 +1,14 @@
 # ResearchAccelerator.jl
 
+[![][documentation-main-img]][documentation-main-url] [![][build-main-img]][build-main-url] [![][test-main-img]][test-main-url] [![][codecov-img]][codecov-url]
+
 ResearchAccelerator.jl is a Julia Package that provides broad-based support to accelerate applied research using feature selection/dimensionality reduction techniques.
 
 ## Features
 
-- Extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using ```ModelSelection.jl``` results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
+- Extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using [ModelSelection.jl](https://github.com/ParallelGSReg/ModelSelectionGUI.jl) results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
   
-- AI integration for references and literature review. Using user-provided keywords or phrases, ```ResearchAccelerator.jl``` will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/citations statistics. Finally, a machine learning system with modern Large Language Models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
+- AI integration for references and literature review. Using user-provided keywords or phrases, ResearchAccelerator.jl will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/citations statistics. Finally, a machine learning system with modern Large Language Models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
 
 ## Installation
 
@@ -30,7 +32,7 @@ The .zip file resulted, could be load in OverLeaf to obtain the .pdf file, as we
 
 ## Documentation
 
-For more detailed information about this package, its functionalities, and usage instructions, please refer to our [detailed documentation page](./docs/detailed.md).
+For more detailed information about this package, its functionalities, and usage instructions, please refer to our [documentation page](https://parallelgsreg.github.io/ResearchAccelerator.jl).
 
 ## ModelSelection package
 ResearchAccelerator.jl package uses ModelSelection.jl. For more details about the functionalities and features provided by ModelSelection, please visit the [package repository](https://github.com/ParallelGSReg/ModelSelection.jl).
@@ -41,8 +43,20 @@ Contributions are welcome! If you encounter any issues or have suggestions for i
 
 ## TODO List
 
-For an overview of pending tasks, improvements, and future plans for the ModelSelectionGUI package, please refer to the [TODO.md](TODO.md) file.
+For an overview of pending tasks, improvements, and future plans for the ResearchAccelerator.jl package, please refer to the [TODO.md](TODO.md) file.
 
 ## License
 
 This package is licensed under the [MIT License](LICENSE).
+
+[build-main-img]: https://github.com/ParallelGSReg/ResearchAccelerator.jl/actions/workflows/build.yaml/badge.svg?branch=main
+[build-main-url]: https://github.com/ParallelGSReg/ResearchAccelerator.jl/pkgs/container/researchaccelerator.jl
+
+[test-main-img]: https://github.com/ParallelGSReg/ResearchAccelerator.jl/actions/workflows/test.yaml/badge.svg?branch=main
+[test-main-url]: https://github.com/ParallelGSReg/ResearchAccelerator.jl/actions/workflows/test.yaml
+
+[codecov-img]: https://codecov.io/gh/ParallelGSReg/ResearchAccelerator.jl/branch/main/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/ParallelGSReg/ResearchAccelerator.jl
+
+[documentation-main-img]: https://github.com/ParallelGSReg/ResearchAccelerator.jl/actions/workflows/docs.yaml/badge.svg
+[documentation-main-url]: https://parallelgsreg.github.io/ResearchAccelerator.jl

@@ -1,21 +1,27 @@
-name: Build test
+name: Build
 
 on: 
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'Project.toml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'Project.toml'
 
 jobs:
-  build-test:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         julia-version:
           - '1.6.7'
-          - '1.8'
+          - 'nightly'
         julia-arch: 
           - x64
         os: 
@@ -26,9 +32,10 @@ jobs:
           - os: macOS-latest
             julia-arch: x86
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
+      - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1

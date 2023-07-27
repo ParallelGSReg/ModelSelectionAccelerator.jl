@@ -1,14 +1,37 @@
-using Distributions, Documenter
+using Documenter, DocumenterTools
+using ResearchAccelerator
+
+# The DOCSARGS environment variable can be used to pass additional arguments to make.jl.
+# This is useful on CI, if you need to change the behavior of the build slightly but you
+# can not change the .travis.yml or make.jl scripts any more (e.g. for a tag build).
+if haskey(ENV, "DOCSARGS")
+    for arg in split(ENV["DOCSARGS"])
+        (arg in ARGS) || push!(ARGS, arg)
+    end
+end
 
 makedocs(
-    format = Documenter.HTML(),
-    sitename = "ResearchAccelerator",
+    format = Documenter.HTML(
+        prettyurls = false,
+        assets = ["assets/favicon.ico"],
+    ),
+    source = "src",
+    build   = "build",
+    clean   = true,
+    modules = [ResearchAccelerator],
+    sitename = "ResearchAccelerator.jl",
     pages = [
-        "Home" => "index.md"
+        "Home" => "index.md",
+        "Getting Started" => "start.md",
+        "Usage" => "usage.md",
+        "Contributing" => "contributing.md",
+        "News" => "news.md",
+        "Todo" => "todo.md",
+        "License" => "license.md",
     ],
-    debug = true,
 )
 
 deploydocs(
-    repo   = "github.com/ParallelGSReg/ResearchAccelerator.jl.git",
+    repo = "github.com/ParallelGSReg/ResearchAccelerator.jl.git",
+    versions = nothing,
 )
