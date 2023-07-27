@@ -10,12 +10,12 @@ Pages = ["usage.md"]
 
 ```julia
 using ModelSelection
-using ResearchAccelerator
+using ModelSelectionReport
 
 data = ModelSelection.load("result.jld")
 
 # Obtain a Latex Document which summarizes all ModelSelection Results, as well as a bibliography analysis based on keywords introduced by the user, from google scholar. In this case, at least 50 documents are analyzed.
-ResearchAccelerator.researchaccelerator(
+ModelSelectionReport.ModelSelectionReport(
 	data, 
 	query = ["Balance of Payments", "Constraints", "Real Exchange Rate"], 
 	max = 50,
@@ -23,7 +23,7 @@ ResearchAccelerator.researchaccelerator(
 ) 
 
 # Obtain a Latex Document which summarizes all ModelSelection Results, as well as a bibliography analysis based on keywords introduced by the user, from google scholar. In this case, at least 50 documents are analyzed.
-ResearchAccelerator.researchaccelerator(
+ModelSelectionReport.ModelSelectionReport(
 	data, 
 	query = ["Balance of Payments", "Constraints", "Real Exchange Rate"], 
 	max = 50,
@@ -33,12 +33,12 @@ ResearchAccelerator.researchaccelerator(
 
 The .zip file resulted, could be load in OverLeaf to obtain the .pdf file, as well as edit the documents considering user's preferences.
 
-## researchaccelerator() function
+## ModelSelectionReport() function
 
-`researchaccelerator()` function is a versatile tool designed to assist researchers in various stages of their research process, particularly in the areas of model selection, literature analysis, and publication analysis. It integrates with different modules like `ModelSelection.jl`, `PublishOrPerish.jl`, and `BiblioAnalysis.jl`, allowing users to perform a wide range of research-related tasks efficiently.
+`ModelSelectionReport()` function is a versatile tool designed to assist researchers in various stages of their research process, particularly in the areas of model selection, literature analysis, and publication analysis. It integrates with different modules like `ModelSelection.jl`, `PublishOrPerish.jl`, and `BiblioAnalysis.jl`, allowing users to perform a wide range of research-related tasks efficiently.
 
 ```julia
-function researchaccelerator(
+function ModelSelectionReport(
 	# Latex Usage
 	data::ModelSelection.ModelSelectionData;
 	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,
@@ -72,7 +72,7 @@ function researchaccelerator(
 
 ### Optional parameters
 
-- `exportlatex::Union{Nothing, String}`: Export of results in LaTeX format. If provided with a filename (String), the function will export results to the specified LaTeX file. If set to Nothing, default will be performed. Default: `ResearchAccelerator`.
+- `exportlatex::Union{Nothing, String}`: Export of results in LaTeX format. If provided with a filename (String), the function will export results to the specified LaTeX file. If set to Nothing, default will be performed. Default: `ModelSelectionReport`.
 
 - `query::Union{Vector{String}, Nothing}`: Specify the search query for the literature analysis. If provided with a Vector of Strings, it represents the search terms for the literature analysis. If set to Nothing, PublishOrPerish and BiblioAnalysis modules will not be performed. Default: `nothing`.
 

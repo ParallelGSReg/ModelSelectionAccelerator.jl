@@ -15,7 +15,7 @@ using
 	StatsPlots,
 	ZipFile
 
-using ..ResearchAccelerator
+using ..ModelSelectionReport
 
 #export csv, summary, latex
 export latex

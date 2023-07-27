@@ -1,6 +1,6 @@
 # Todo
 
 ```@eval
-using Markdown, ResearchAccelerator
-Markdown.parse_file(joinpath(pkgdir(ResearchAccelerator), "TODO.md"))
+using Markdown, ModelSelectionReport
+Markdown.parse_file(joinpath(pkgdir(ModelSelectionReport), "TODO.md"))
 ```

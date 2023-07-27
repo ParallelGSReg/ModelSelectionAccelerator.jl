@@ -23,33 +23,33 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 	criteria_diff = Array{Any}(undef, length(filter(x -> x != :_cons, data.expvars)), 2)
 
 	if length(data.options[:criteria]) > 1
-		order = ResearchAccelerator.get_column_index(:order, data.results[1].datanames)
+		order = ModelSelectionReport.get_column_index(:order, data.results[1].datanames)
 	else
-		order = ResearchAccelerator.get_column_index(data.options[:criteria][1], data.results[1].datanames)
+		order = ModelSelectionReport.get_column_index(data.options[:criteria][1], data.results[1].datanames)
 	end
 
 	if data.options[:estimator] == :ols
-		F = ResearchAccelerator.get_column_index(:F, data.results[1].datanames)
+		F = ModelSelectionReport.get_column_index(:F, data.results[1].datanames)
 	else
-		F = ResearchAccelerator.get_column_index(:LR, data.results[1].datanames)
+		F = ModelSelectionReport.get_column_index(:LR, data.results[1].datanames)
 	end 
 
 	if data.options[:residualtest]
-		wtest = ResearchAccelerator.get_column_index(:wtest, data.results[1].datanames)
-		jbtest = ResearchAccelerator.get_column_index(:jbtest, data.results[1].datanames)
+		wtest = ModelSelectionReport.get_column_index(:wtest, data.results[1].datanames)
+		jbtest = ModelSelectionReport.get_column_index(:jbtest, data.results[1].datanames)
 	end
 	
 	if !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] == :ols
-		bgtest = ResearchAccelerator.get_column_index(:bgtest, data.results[1].datanames)
+		bgtest = ModelSelectionReport.get_column_index(:bgtest, data.results[1].datanames)
 	elseif !isnothing(data.options[:time]) && data.options[:residualtest] && data.options[:estimator] != :ols
-		wwtest = ResearchAccelerator.get_column_index(:wwtest, data.results[1].datanames)
+		wwtest = ModelSelectionReport.get_column_index(:wwtest, data.results[1].datanames)
 	end
 
 
 	for (i, expvar) in enumerate(expvars2)
 
-		bcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
-		tcol = ResearchAccelerator.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
+		bcol = ModelSelectionReport.get_column_index(Symbol("$(expvar)_b"), data.results[1].datanames)
+		tcol = ModelSelectionReport.get_column_index(Symbol("$(expvar)_t"), data.results[1].datanames)
 		
 		x = data.results[1].data[findall(x -> !isnan(x), data.results[1].data[:, bcol]), bcol]
 
@@ -600,7 +600,7 @@ Generates latex file with all subset regression result.
 # Arguments
 - `dict::Dict`: TODO add definition.
 - `data::ModelSelection.ModelSelectionData`: the model selection data.
-- `result::ResearchAccelerator.AllSubsetRegression.AllSubsetRegressionResult: all subset regression result.
+- `result::ModelSelectionReport.AllSubsetRegression.AllSubsetRegressionResult: all subset regression result.
 """
 function latex!(
 	dict::Dict,
@@ -627,7 +627,7 @@ function latex!(
 
 		
 		
-		# FIXME What?? modelavg_datanames = ResearchAccelerator.AllSubsetRegression.get_varnames(result.modelavg_datanames)
+		# FIXME What?? modelavg_datanames = ModelSelectionReport.AllSubsetRegression.get_varnames(result.modelavg_datanames)
 		
 		d_bestmodel = Dict()
 		d_bestmodel["depvar"] = data.depvar

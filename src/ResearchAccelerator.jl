@@ -1,4 +1,4 @@
-module ResearchAccelerator
+module ModelSelectionReport
 
     using ModelSelection
     using DataFrames
@@ -17,7 +17,7 @@ module ResearchAccelerator
     export Output
     export PublishOrPerish
     export BiblioAnalysis
-    export researchaccelerator
+    export ModelSelectionReport
     
 end
 

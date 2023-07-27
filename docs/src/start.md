@@ -4,17 +4,17 @@ This basic example demonstrates how to use the package in its simplest way. Howe
 
 ## Installation
 
-ResearchAccelerator.jl can be installed using the Julia package manager. From the Julia REPL, type ] to enter the Pkg REPL mode and run
+ModelSelectionReport.jl can be installed using the Julia package manager. From the Julia REPL, type ] to enter the Pkg REPL mode and run
 
 ```
-pkg> add ResearchAccelerator
+pkg> add ModelSelectionReport
 ```
 
 ## Usage
 
 ```julia
-using ModelSelection, ResearchAccelerator
+using ModelSelection, ModelSelectionReport
 
 data = ModelSelection.load("result.jld")
-ResearchAccelerator.researchaccelerator(data)
+ModelSelectionReport.ModelSelectionReport(data)
 ```

@@ -1,5 +1,5 @@
 # PublishOrPerish const
-const EXPORTLATEX_DEFAULT = "ResearchAccelerator"
+const EXPORTLATEX_DEFAULT = "ModelSelectionReport"
 const QUERT_CONST = nothing
 const MAX_CONST = 100
 const SOURCE_CONST = "gscholar"

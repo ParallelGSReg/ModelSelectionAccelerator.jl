@@ -1,6 +1,6 @@
 # News
 
 ```@eval
-using Markdown, ResearchAccelerator
-Markdown.parse_file(joinpath(pkgdir(ResearchAccelerator), "NEWS.md"))
+using Markdown, ModelSelectionReport
+Markdown.parse_file(joinpath(pkgdir(ModelSelectionReport), "NEWS.md"))
 ```
