@@ -1,4 +1,4 @@
-function ModelSelectionAccelerator(
+function researchaccelerator(
 	# Latex Usage
 	data::ModelSelection.ModelSelectionData;
 	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,

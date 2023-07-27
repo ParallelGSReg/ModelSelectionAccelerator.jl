@@ -17,7 +17,5 @@ module ModelSelectionAccelerator
     export Output
     export PublishOrPerish
     export BiblioAnalysis
-    export ModelSelectionAccelerator
-    
+    export researchaccelerator
 end
-
