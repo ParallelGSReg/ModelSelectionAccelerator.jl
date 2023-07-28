@@ -1,4 +1,4 @@
-function researchaccelerator(
+function modelselectionaccelerator(
 	# Latex Usage
 	data::ModelSelection.ModelSelectionData;
 	exportlatex::Union{Nothing, String} = EXPORTLATEX_DEFAULT,
@@ -14,9 +14,9 @@ function researchaccelerator(
 	password::Union{String, Nothing} = PASS_CONST,
 
 	# BiblioAnalysis Usage
-	data_csv::Union{String, Nothing} = outfile,
+	data_csv::Union{String, Nothing} = OUTFILE_CONST,
 	query_ ::Union{Vector{String}, Nothing} = query,
-	out_folder::String = OUTFILE_CONST, 
+	out_folder::String = OUT_FOLDER_CONST, 
 	n_neighbors::Int = N_NEIGHBORS_CONST, 
 	n_components::Int = N_COMPONENTS_CONST, 
 	min_cluster_size::Int = MIN_CLUSTER_SIZE_CONST,

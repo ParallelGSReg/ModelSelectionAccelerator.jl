@@ -47,7 +47,7 @@ or:
 --raw syntax    use native 'syntax' directly
 	    =#
 	    cmd_salida = `src/PublishOrPerish/bin/pop8query --max=$max $source $method=\"$query\" $outfile`
-	    cmd_bibtex= `src/PublishOrPerish/bin/pop8query --max=$max $source $method=\"$query\" --format=bibtex $outbib.bib`
+	    cmd_bibtex = `src/PublishOrPerish/bin/pop8query --max=$max $source $method=\"$query\" --format=bibtex $outbib.bib`
 	    try
 	    	output = read(run(cmd_salida), String)
 	    	output = read(run(cmd_bibtex), String)

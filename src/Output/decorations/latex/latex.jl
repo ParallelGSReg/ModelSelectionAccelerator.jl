@@ -22,10 +22,10 @@ function create_figures(data::ModelSelectionData, destfolder::String)
 	
 	criteria_diff = Array{Any}(undef, length(filter(x -> x != :_cons, data.expvars)), 2)
 
-	if length(data.options[:criteria]) > 1
+	if length(data.results[1].criteria) > 1
 		order = ModelSelectionAccelerator.get_column_index(:order, data.results[1].datanames)
 	else
-		order = ModelSelectionAccelerator.get_column_index(data.options[:criteria][1], data.results[1].datanames)
+		order = ModelSelectionAccelerator.get_column_index(data.results[1].criteria[1], data.results[1].datanames)
 	end
 
 	if data.options[:estimator] == :ols
@@ -570,19 +570,19 @@ function latex!(
 
 	# PreliminarySelection
 	
-	if PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY in keys(data.extras)
+	if PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY in keys(data.extras) && "lambda" in keys(data.extras[PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY])
 		dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)] = process_dict(data.extras[PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY])
 
-		betas = dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["lassobetas"]
+		betas = dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["betas"]
 		betas_dict = []
 		for (i, beta) in enumerate(filter(j -> j != 0, betas))
 			if (beta != 0)
 				push!(betas_dict, Dict("name" => replace(string(data.expvars[i]), "_" => "\\_"), "coef" => @sprintf("%.3f", beta)))
 			end
 		end
-
-		dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["lassolambda"] =
-			@sprintf("%.3f", dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["lassolambda"])
+		
+		dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["lambda"] =
+			@sprintf("%.3f", dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["lambda"])
 
 		dict[string(PreliminarySelection.PRELIMINARYSELECTION_EXTRAKEY)]["expvssars"] = betas_dict
 	end
@@ -758,6 +758,8 @@ function latex!(
 			end
 		end
 
+		#FIXME: Is assuming _t vars but are not present if ols but without tests.
+		#FIXME: Refactor this code 
 		expvars_dict = map(
 			var -> begin
 				t = result.data[:, ModelSelection.get_column_index(Symbol("$(var)_t"), result.datanames)]

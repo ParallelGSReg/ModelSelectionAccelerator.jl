@@ -2,7 +2,7 @@
 
 \usepackage{ResearchAccelerator-style}
 
-\title{ResearchAccelerator.jl \\
+\title{ModelSelectionAccelerator.jl \\
        \vspace{5mm} SUMMARY REPORT} 
 
 %\author{
@@ -81,18 +81,18 @@ In order to implement this model selection algorithm, the following syntax has b
   )
 \end{lstlisting}
 
-This report is created using the new \verb|ResearchAccelerator.jl|, a new julia package that includes:
+This report is created using the new \verb|ModelSelectionAccelerator.jl|, a new julia package that includes:
 \begin{enumerate}
   \item extended Julia-to-Latex migration functions that work as an “automatic research assistant”. Using \verb|ModelSelection.jl| results, it generates a dynamic Latex document, with relevant tables, graphics, and metrics.
   
-  \item AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ResearchAccelerator.jl| will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/ citations statistics. Finally, a machine learning system with modern NLP models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
+  \item AI integration for references and literature review. Using user-provided keywords or phrases, \verb|ModelSelectionAccelerator.jl| will interact with Google Scholar, Scopus, PubMed, among others, to obtain a potentially relevant bibliography. Then a subset of them with available abstracts, references, and keywords will be used to provide citation networks, and keywords/ citations statistics. Finally, a machine learning system with modern NLP models will be used to generate, based on articles’ abstracts, a similarity network to provide users with additional information for a deeper search among related bibliography. This network will be exported to the Latex document as a table, a figure, and to a standard output file to be viewed using graph plotting and analysis tools such as Gephi.
 \end{enumerate}
 
-The following sintax was use based on \verb|ResearchAccelerator.jl| package
+The following sintax was use based on \verb|ModelSelectionAccelerator.jl| package
 
 \begin{lstlisting} 
-  using ResearchAccelerator
-  ResearchAccelerator.researchaccelerator({{#user_input}}{{#input}}
+  using ModelSelectionAccelerator
+  ModelSelectionAccelerator.modelSelectionaccelerator({{#user_input}}{{#input}}
   data = {{data}}{{/input}}{{#exportlatex}};
   exportlatex = {{{.}}}{{/exportlatex}}{{#query}},
   query = {{{.}}}{{/query}}{{#max}},
@@ -576,9 +576,9 @@ In this figure it is shown that potential covariates included in the general unr
 Considering keywords introduced by the user ({{#query}}{{{.}}}{{/query}}), the integrated function called \verb|PublishOrPerish.jl| returns a list of at least {{#max}}{{{.}}}{{/max}} papers, from {{#source}}{{.}}{{/source}}. After that, the other function named \verb|BiblioAnalysis.jl|, uses the abovementioned input to assist researcher in filtering the bibliography and reducing the paper sample. For this, it's based on Large Language Models (LLM) to minimize a distance measure among documents and the introduced query. For that rutine, the document abstracts are used. The \verb|PublishOrPerish.jl| and \verb|BiblioAnalysis.jl| functions are used as follows:
 
 \begin{lstlisting} 
-  using ResearchAccelerator
+  using ModelSelectionAccelerator
 
-  ResearchAccelerator.PublishOrPerish({{#input}}{{#data}}
+  ModelSelectionAccelerator.PublishOrPerish({{#input}}{{#data}}
     data = {{.}}{{/data}}{{/input}}{{#query}},
     query = {{{.}}}{{/query}}{{#max}},
     max = {{{.}}}{{/max}}{{#source}}, 
@@ -589,7 +589,7 @@ Considering keywords introduced by the user ({{#query}}{{{.}}}{{/query}}), the i
     password = {{{.}}}{{/password}}
     )
 
-  ResearchAccelerator.BiblioAnalysis({{#n_neighbors}},
+  ModelSelectionAccelerator.BiblioAnalysis({{#n_neighbors}},
     n_neighbors = {{{.}}}{{/n_neighbors}}{{#n_components}}, 
     n_components = {{{.}}}{{/n_components}}{{#min_cluster_size}}, 
     min_cluster_size = {{{.}}}{{/min_cluster_size}}{{#min_samples}},
@@ -602,13 +602,11 @@ Considering keywords introduced by the user ({{#query}}{{{.}}}{{/query}}), the i
 \end{lstlisting}
 
 \subsection{Topic Analysis}
-The BERT model is used through the \verb|BERTopic| phyton package with the aim of obtain relevant topics from the documents. Considering user's query and the rest of parameters introduced, the table below summarizes the infered topics and their distance to the query.
+The BERT model is used through the \verb|BERTopic| phyton package with the aim of obtain relevant topics from the documents. Considering user's query and the rest of parameters introduced, the table below summarizes the infered topics and their distance to the query. Topic 0 is the placeholder for non-query related documents.
 
-\begin{table}
-  \centering
-  \input{topics_distance_table.tex}  
-\end{table}
-
+\centering{
+\input{topics_distance_table.tex}  
+}
 First of all, a figure describes the evolution of the number of obtained documents of each topic for each year, inferring how relevant were the papers through recent years. In the following figure, a two-dimensional projection of the topics embedding and the query (in red) is shown. Then, next figure allows to understand distances among topics and their relative position to the query. Thereupon, the cosine similarity matrix shown explains the similarity among inferred topics. Finally, document clusters and their assignment into topics is shown in the next figure.
 
 \begin{figure}[ht]
@@ -631,20 +629,18 @@ First of all, a figure describes the evolution of the number of obtained documen
 
 \begin{figure}[ht]
   \centering
-  \caption{Clusters and Topics}
+  \caption{Documents and Topics}
   \includegraphics[scale = 0.55, angle=90]{documents.png}
 \end{figure}
 
 \clearpage
 
-\subsection{Abstracs Analysis}
+\subsection{Abstracts Analysis}
 In this subsection document abstracts are analyzed. As the number of documents can be huge, only the first 10\% are shown below. They are ordered by their distance to the introduced query.
 
-\begin{table}[ht]
-  \centering
-  \input{abstracts_distance_table.tex} 
-\end{table}
-
+\centering{
+\input{abstracts_distance_table.tex} 
+}
 \clearpage
 
 In addition the query and documents' 2D projection is shown to gather insight on the documents' location relative to the query. This figure can be used to adjust the query if documents found are to far or to near from it.
@@ -652,8 +648,16 @@ In addition the query and documents' 2D projection is shown to gather insight on
 \begin{figure}[ht]
   \centering
   \caption{Query and Documents' 2D projection}
-  \includegraphics[scale = 1]{documents.png}
+  \includegraphics[scale = 1]{abstracts_and_query.png}
 \end{figure}
+
+As the the quantity of documents can be high, a filter with the nearest ones to the desired query is shown. It's document id from the document's table is shown to recognize them.
+\begin{figure}[ht]
+  \centering
+  \caption{Query and Documents' 2D projection}
+  \includegraphics[scale = 1]{abstracts_and_query_cropped.png}
+\end{figure}
+
 
 {{/user_input}}
 {{/analyzer_gen}}
@@ -673,7 +677,7 @@ In addition the query and documents' 2D projection is shown to gather insight on
 \begin{thebibliography}{1}
   
 \bibitem{gsreg2019}
-Panigo D., Glüzmann P., Mocskos, E., Mauri Ungaro, A., Mari, V., and Monzón, N. (2019). \textit{ResearchAccelerator.jl: Building bridges between Machine Learning and Econometrics in Fat-Data scenarios}.Paper presented at JuliaCon2019, Baltimore-MD, United States.
+Panigo D., Glüzmann P., Mocskos, E., Mauri Ungaro, A., Mari, V., and Monzón, N. (2019). \textit{ModelSelection.jl: Building bridges between Machine Learning and Econometrics in Fat-Data scenarios}.Paper presented at JuliaCon2019, Baltimore-MD, United States.
   
 \bibitem{hassani2007}
 Hassani H. (2007). \textit{Singular Spectrum Analysis: Methodology and Comparison}. Journal of Data Science, 5, 239-257.
