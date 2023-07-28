@@ -8,3 +8,4 @@ const MIN_SAMPLES_CONST = 5
 const DIVERSITY_CONST = nothing
 const LANGUAGE_CONST = "Enghlish"
 const EXPORT_HTML_CONST = false 
+const BIBLIO_EXEC_PATH = "./src/BiblioAnalysis/bin/biblioanalysis" 

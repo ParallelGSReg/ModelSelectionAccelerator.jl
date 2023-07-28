@@ -17,7 +17,7 @@ module BiblioAnalysis
 		)::Bool
 	    
 		
-		cmd_salida = `./src/BiblioAnalysis/bin/biblioanalysis --data_csv=\"$data_csv\" --query=\"$query\" --out_folder=\"$out_folder\" --n_neighbors=$n_neighbors --n_components=$n_components --min_cluster_size=$min_cluster_size --min_samples=$min_samples --language=$language --export_html=$export_html`
+		cmd_salida = `$BIBLIO_EXEC_PATH --data_csv=\"$data_csv\" --query=\"$query\" --out_folder=\"$out_folder\" --n_neighbors=$n_neighbors --n_components=$n_components --min_cluster_size=$min_cluster_size --min_samples=$min_samples --language=$language --export_html=$export_html`
 	    #--diversity=$diversity
 
         try
